@@ -1,53 +1,73 @@
-> Edited for use in IDX on 07/09/12
+# HachiBudget - Personal Finance & Budget Tracker
 
-# Welcome to your Expo app 👋
+HachiBudget is a comprehensive personal finance application designed to help you manage your money effectively. Track your spending, manage subscriptions, set savings goals, and gain insights into your financial habits with a clean, intuitive interface.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## ✨ Features
 
-## Get started
+*   **Dashboard:** Get a quick overview of your finances, including your current budget, recent transactions, and savings progress.
+*   **Budget Tracking:** Set monthly budgets and track your spending by category.
+*   **Transaction Logging:** Easily add, edit, and categorize your daily expenses.
+*   **Subscription Management:** Keep track of your recurring subscriptions and get reminders for upcoming payments.
+*   **Savings Goals:** Create and monitor your savings goals to stay motivated.
+*   **Grocery List:** A dedicated module to manage your grocery shopping list.
+*   **Financial Insights:** Visualize your spending patterns with insightful charts and graphs, including:
+    *   Monthly Spending Trends
+    *   Category Breakdowns
+    *   Daily Spending Heatmaps
+*   **Dual Themes:** Choose between two modes:
+    *   **Hachi Mode:** A personalized, branded theme.
+    *   **Standard Mode:** A clean, light-themed alternative.
+*   **Security:** Secure your app with PIN lock and biometric authentication.
+*   **Home Screen Widgets:** Access key features like "Quick Add" directly from your home screen.
 
-#### Android
+## 🛠️ Tech Stack
 
-Android previews are defined as a `workspace.onStart` hook and started as a vscode task when the workspace is opened/started.
+*   **Framework:** [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
+*   **State Management:** [Zustand](https://github.com/pmndrs/zustand)
+*   **Database:** [SQLite](https://www.sqlite.org/index.html) with [Drizzle ORM](https://orm.drizzle.team/) for local data persistence.
+*   **Navigation:** [Expo Router](https://docs.expo.dev/router/introduction/) (File-based routing)
+*   **Charting:** [Victory Native](https://formidable.com/open-source/victory/docs/native) for data visualization.
+*   **Styling:** StyleSheet with theme support for dynamic light/dark modes.
 
-Note, if you can't find the task, either:
-- Rebuild the environment (using command palette: `IDX: Rebuild Environment`), or
-- Run `npm run android -- --tunnel` command manually run android and see the output in your terminal. The device should pick up this new command and switch to start displaying the output from it.
+## 🚀 Getting Started
 
-In the output of this command/task, you'll find options to open the app in a
+This project is optimized for development within an IDE like IDX.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+1.  **Clone the repository.**
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+3.  **Run the application:**
+    *   **Android:** The development environment should automatically start the Android preview. You can also run the following command and select the desired emulator or device.
+        ```bash
+        npm run android
+        ```
+    *   **Web:** The web preview is managed automatically by the IDE.
 
-You'll also find options to open the app's developer menu, reload the app, and more.
+## 📂 Project Structure
 
-#### Web
+The project follows a standard React Native (Expo) structure:
 
-Web previews will be started and managred automatically. Use the toolbar to manually refresh.
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+.
+├── src/
+│   ├── app/            # Main application screens and routing (using Expo Router)
+│   ├── api/            # Database connection and schemas
+│   ├── assets/         # Images, fonts, and other static assets
+│   ├── components/     # Reusable UI components
+│   ├── constants/      # Theme colors and other constant values
+│   ├── hooks/          # Custom React hooks
+│   ├── store/          # Zustand stores for global state management
+│   └── ...
+├── README.md           # You are here!
+└── package.json        # Project dependencies and scripts
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🤝 Contributing
 
-## Learn more
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/your-username/hachibudget/issues).
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+*This README was generated by an AI assistant integrated into the development environment.*

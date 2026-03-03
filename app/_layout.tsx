@@ -7,6 +7,14 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export const unstable_settings = {
   anchor: '(tabs)',
+  linking: {
+    prefixes: ['hachibudget://'],
+    config: {
+      screens: {
+        add: 'add',
+      },
+    },
+  },
 };
 
 export default function RootLayout() {
@@ -17,6 +25,7 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        <Stack.Screen name="add" options={{ presentation: 'modal', title: 'Quick Add' }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
