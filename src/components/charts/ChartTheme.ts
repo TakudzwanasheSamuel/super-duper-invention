@@ -1,12 +1,10 @@
-import { VictoryTheme } from 'victory-native';
 import { Colors, Fonts } from '@/constants/theme';
 
+// Minimal Victory theme object tailored for our charts, without
+// depending on built-in VictoryTheme variants (which may differ by version).
 export const ChartTheme = {
-  ...VictoryTheme.grayscale,
   axis: {
-    ...VictoryTheme.grayscale.axis,
     style: {
-      ...VictoryTheme.grayscale.axis.style,
       grid: {
         stroke: '#16161E',
       },
@@ -24,9 +22,7 @@ export const ChartTheme = {
     },
   },
   bar: {
-    ...VictoryTheme.grayscale.bar,
     style: {
-      ...VictoryTheme.grayscale.bar.style,
       data: {
         fill: Colors.accent.blue,
       },
@@ -38,9 +34,7 @@ export const ChartTheme = {
     },
   },
   line: {
-    ...VictoryTheme.grayscale.line,
     style: {
-      ...VictoryTheme.grayscale.line.style,
       data: {
         stroke: Colors.accent.gold,
         strokeWidth: 3,
@@ -53,18 +47,16 @@ export const ChartTheme = {
     },
   },
   pie: {
-    ...VictoryTheme.grayscale.pie,
     style: {
-        ...VictoryTheme.grayscale.pie.style,
-        data: {
-            stroke: 'transparent',
-            strokeWidth: 0,
-        },
-        labels: {
-            fontFamily: Fonts.body,
-            fontSize: 12,
-            fill: 'white',
-        },
+      data: {
+        stroke: 'transparent',
+        strokeWidth: 0,
+      },
+      labels: {
+        fontFamily: Fonts.body,
+        fontSize: 12,
+        fill: 'white',
+      },
     },
   },
 };

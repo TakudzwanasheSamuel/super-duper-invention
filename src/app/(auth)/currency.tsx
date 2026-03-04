@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '@/store/useUserStore';
 import { Colors, Fonts } from '@/constants/theme';
-import * as SQLite from 'expo-sqlite';
+import { openLegacyDatabase } from '@/api/sqliteCompat';
 
-const db = SQLite.openDatabase('dark-luxury.db');
+const db = openLegacyDatabase('dark-luxury.db');
 
 export default function CurrencyScreen() {
   const router = useRouter();
@@ -26,6 +27,13 @@ export default function CurrencyScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('../../../assets/images/logo.png')}
+          style={styles.logo}
+          contentFit="contain"
+        />
+      </View>
       <Text style={styles.title}>Primary Currency</Text>
       <View style={styles.toggleContainer}>
         <TouchableOpacity
@@ -58,6 +66,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  logo: {
+    width: 140,
+    height: 140,
   },
   title: {
     fontFamily: Fonts.heading,

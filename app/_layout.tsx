@@ -8,7 +8,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 export const unstable_settings = {
   anchor: '(tabs)',
   linking: {
-    prefixes: ['hachibudget://'],
+    prefixes: ['mybudget://'],
     config: {
       screens: {
         add: 'add',

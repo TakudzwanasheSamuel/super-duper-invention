@@ -1,19 +1,17 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { TabBarIcon } from '@/components/TabBarIcon';
+import { Colors } from '@/constants/theme';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors.accent.gold,
         headerShown: false,
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -24,11 +22,38 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="budget"
+        options={{
+          title: 'Budget',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'wallet' : 'wallet-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="insights"
+        options={{
+          title: 'Insights',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'stats-chart' : 'stats-chart-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="explore"
         options={{
           title: 'Explore',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+            <TabBarIcon name={focused ? 'compass' : 'compass-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="utility"
+        options={{
+          title: 'Utility',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? 'construct' : 'construct-outline'} color={color} />
           ),
         }}
       />

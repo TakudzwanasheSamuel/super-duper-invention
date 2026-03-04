@@ -39,7 +39,10 @@ export default function TabTwoScreen() {
           </ExternalLink>
           component.
         </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
+        <Image
+          source={require('../../../assets/images/logo.png')}
+          style={{ width: 140, height: 140, alignSelf: 'center' }}
+        />
       </Collapsible>
       <Collapsible title="Custom fonts">
         <ThemedText>

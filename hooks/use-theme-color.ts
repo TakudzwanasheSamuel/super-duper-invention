@@ -1,17 +1,16 @@
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useUserStore } from '@/store/useUserStore';
-import { Colors } from '@/constants/theme';
-import { StandardTheme } from '@/constants/standardTheme';
+import { Colors as BaseColors } from '../constants/theme';
+import { StandardTheme } from '../src/constants/standardTheme';
 
 export function useThemeColor(
   props: { light?: string; dark?: string },
-  colorName: keyof typeof Colors.light & keyof typeof Colors.dark
+  colorName: keyof typeof BaseColors.light & keyof typeof BaseColors.dark
 ) {
-  const theme = useColorScheme();
+  const scheme = useColorScheme(); // 'light' | 'dark'
   const { themeMode } = useUserStore();
 
-  const colorScheme = theme ?? 'light';
-
+  const colorScheme = scheme ?? 'light';
   const colorFromProps = props[colorScheme];
 
   if (colorFromProps) {
@@ -22,5 +21,5 @@ export function useThemeColor(
     return StandardTheme[colorScheme][colorName];
   }
 
-  return Colors[colorScheme][colorName];
+  return BaseColors[colorName as keyof typeof BaseColors.light];
 }

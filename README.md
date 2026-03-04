@@ -1,6 +1,6 @@
-# HachiBudget - Personal Finance & Budget Tracker
+# myBudget - Personal Finance & Budget Tracker
 
-HachiBudget is a comprehensive personal finance application designed to help you manage your money effectively. Track your spending, manage subscriptions, set savings goals, and gain insights into your financial habits with a clean, intuitive interface.
+myBudget is a comprehensive personal finance application designed to help you manage your money effectively. Track your spending, manage subscriptions, set savings goals, and gain insights into your financial habits with a clean, intuitive interface.
 
 ## ✨ Features
 
@@ -66,7 +66,7 @@ The project follows a standard React Native (Expo) structure:
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/your-username/hachibudget/issues).
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page in your repository hosting platform.
 
 ---
 

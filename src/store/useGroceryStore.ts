@@ -1,10 +1,10 @@
 import { create } from 'zustand';
-import * as SQLite from 'expo-sqlite';
+import { openLegacyDatabase } from '@/api/sqliteCompat';
 import { GroceryItemRow } from '@/api/db';
 import { useTransactionStore } from './useTransactionStore';
 import { useCategoryStore } from './useCategoryStore';
 
-const db = SQLite.openDatabase('dark-luxury.db');
+const db = openLegacyDatabase('dark-luxury.db');
 
 type State = {
   groceryItems: GroceryItemRow[];

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '@/store/useUserStore';
 import { Colors, Fonts } from '@/constants/theme';
-import * as SQLite from 'expo-sqlite';
+import { openLegacyDatabase } from '@/api/sqliteCompat';
 
-const db = SQLite.openDatabase('dark-luxury.db');
+const db = openLegacyDatabase('dark-luxury.db');
 
 export default function WelcomeScreen() {
   const [name, setName] = useState('');
@@ -38,6 +39,13 @@ export default function WelcomeScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('../../../assets/images/logo.png')}
+          style={styles.logo}
+          contentFit="contain"
+        />
+      </View>
       <Text style={styles.title}>{typedText}</Text>
       <TextInput
         style={styles.input}
@@ -60,6 +68,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  logo: {
+    width: 160,
+    height: 160,
+  },
   title: {
     fontFamily: Fonts.heading,
     fontSize: 36,
@@ -69,13 +85,15 @@ const styles = StyleSheet.create({
   input: {
     fontFamily: Fonts.body,
     fontSize: 18,
-    color: 'white',
-    backgroundColor: Colors.secondary,
+    color: '#000000',
+    backgroundColor: '#FFFFFF',
     width: '80%',
     padding: 15,
     borderRadius: 10,
     marginBottom: 20,
     textAlign: 'center',
+    borderWidth: 2,
+    borderColor: Colors.accent.gold,
   },
   button: {
     backgroundColor: Colors.accent.gold,

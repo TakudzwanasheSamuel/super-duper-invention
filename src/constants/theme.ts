@@ -1,10 +1,13 @@
-
 export const Colors = {
-  background: '#0A0A0F',
-  secondary: '#16161E',
+  // Primary app background – deep blue‑charcoal, not pure black
+  background: '#111827',
+  // Surface / card background – slightly lighter for contrast
+  secondary: '#1F2937',
   accent: {
+    // Primary accent for CTAs and highlights
     gold: '#FFB100',
-    blue: '#00E5FF',
+    // Secondary accent for links / subtle highlights
+    blue: '#38BDF8',
   },
 };
 

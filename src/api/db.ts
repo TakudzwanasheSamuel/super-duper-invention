@@ -1,4 +1,4 @@
-import * as SQLite from 'expo-sqlite';
+import { openLegacyDatabase } from '@/api/sqliteCompat';
 import React, { ReactNode, useEffect } from 'react';
 
 // --- TypeScript Interfaces ---
@@ -51,7 +51,7 @@ export interface SavingsGoalRow {
 }
 
 // --- Database Connection ---
-const db = SQLite.openDatabase('dark-luxury.db');
+const db = openLegacyDatabase('dark-luxury.db');
 
 // --- Seeding Function ---
 const seedCategories = () => {
@@ -166,5 +166,5 @@ export const DatabaseProvider = ({ children }: DatabaseProviderProps) => {
         initDB();
     }, []);
 
-    return <>{children}</>;
+    return children;
 };

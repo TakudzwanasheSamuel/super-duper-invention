@@ -20,8 +20,8 @@ export default function SettingsScreen() {
         <Switch
           value={isHachiMode}
           onValueChange={toggleTheme}
-          trackColor={{ false: '#767577', true: Colors.primary }}
-          thumbColor={isHachiMode ? Colors.secondary : '#f4f3f4'}
+          trackColor={{ false: '#767577', true: Colors.accent.gold }}
+          thumbColor={isHachiMode ? Colors.accent.gold : '#f4f3f4'}
         />
       </View>
     </View>

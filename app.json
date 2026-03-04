@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "mybudget",
+    "name": "myBudget",
     "slug": "mybudget",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "hachibudget",
+    "icon": "./assets/images/logo.png",
+    "scheme": "mybudget",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -14,9 +14,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/logo.png",
+        "backgroundImage": "./assets/images/logo.png",
+        "monochromeImage": "./assets/images/logo.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -26,25 +26,28 @@
           "autoVerify": true,
           "data": [
             {
-              "scheme": "hachibudget",
+              "scheme": "mybudget",
               "host": "add"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/logo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/images/logo.png",
+          "imageWidth": 220,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "dark": {
@@ -52,7 +55,28 @@
           }
         }
       ],
-      "react-native-android-widget"
+      [
+        "react-native-android-widget",
+        {
+          "widgets": [
+            {
+              "name": "SmallWidget",
+              "label": "myBudget (small)",
+              "description": "Shows your myBudget net balance.",
+              "minWidth": "110dp",
+              "minHeight": "110dp"
+            },
+            {
+              "name": "MediumWidget",
+              "label": "myBudget (medium)",
+              "description": "Shows net balance, today's spending, and last transaction.",
+              "minWidth": "250dp",
+              "minHeight": "110dp"
+            }
+          ]
+        }
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

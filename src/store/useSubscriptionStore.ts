@@ -1,19 +1,10 @@
 import { create } from 'zustand';
-import * as SQLite from 'expo-sqlite';
-import * as Notifications from 'expo-notifications';
+import { openLegacyDatabase } from '@/api/sqliteCompat';
 import { SubscriptionRow } from '@/api/db';
 import { useUserStore } from './useUserStore';
 import { useTransactionStore } from './useTransactionStore';
 
-const db = SQLite.openDatabase('dark-luxury.db');
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
+const db = openLegacyDatabase('dark-luxury.db');
 
 type State = {
   subscriptions: SubscriptionRow[];
@@ -36,7 +27,6 @@ export const useSubscriptionStore = create<State & Actions>((set, get) => ({
         [],
         (_, { rows }) => {
           set({ subscriptions: rows._array });
-          get().scheduleSubscriptionNotifications();
         },
         (_, error) => {
           console.error('Error fetching subscriptions:', error);
@@ -82,30 +72,7 @@ export const useSubscriptionStore = create<State & Actions>((set, get) => ({
     return totalInCents / 100;
   },
 
-  scheduleSubscriptionNotifications: async () => {
-    await Notifications.cancelAllScheduledNotificationsAsync();
-
-    const { subscriptions } = get();
-    const now = new Date();
-
-    for (const sub of subscriptions) {
-      const billingDate = new Date(now.getFullYear(), now.getMonth(), sub.billing_day);
-
-      if (now > billingDate) {
-        billingDate.setMonth(billingDate.getMonth() + 1);
-      }
-
-      const notificationDate = new Date(billingDate.getTime() - 24 * 60 * 60 * 1000);
-
-      if (notificationDate > now) {
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: 'Upcoming Subscription Payment',
-            body: `${sub.service_name} payment of ${sub.amount / 100} ${sub.currency} is due tomorrow.`,
-          },
-          trigger: notificationDate,
-        });
-      }
-    }
+  scheduleSubscriptionNotifications: () => {
+    // No-op in Expo Go: remote push notifications are not supported here.
   },
 }));

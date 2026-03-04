@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import * as SQLite from 'expo-sqlite';
+import { openLegacyDatabase } from '@/api/sqliteCompat';
 import { useUserStore } from './useUserStore';
 import { useRateStore } from './useRateStore';
 
-const db = SQLite.openDatabase('dark-luxury.db');
+const db = openLegacyDatabase('dark-luxury.db');
 
 type DailySpending = {
   day: string;

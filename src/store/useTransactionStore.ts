@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import * as SQLite from 'expo-sqlite';
+import { openLegacyDatabase } from '@/api/sqliteCompat';
 import { TransactionRow } from '@/api/db';
 import { useUserStore } from './useUserStore';
 
-const db = SQLite.openDatabase('dark-luxury.db');
+const db = openLegacyDatabase('dark-luxury.db');
 
 type PaymentMethod = 'all' | 'card' | 'cash';
 

@@ -14,7 +14,7 @@ const SmallWidget = () => {
         <a.TextView id="@+id/tv_balance" text={`${primaryCurrency} ${netBalance.toFixed(2)}`} />,
         <a.ImageButton
           id="@+id/btn_quick_add"
-          onClick={openApp.withUrl('myapp://quick-add')}
+          onClick={openApp.withUrl('mybudget://add')}
           src="@drawable/ic_add"
         />,
       ]}
