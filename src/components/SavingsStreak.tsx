@@ -39,7 +39,6 @@ export default function SavingsStreak() {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginVertical: 20,
   },
   streakContainer: {
     flexDirection: 'row',

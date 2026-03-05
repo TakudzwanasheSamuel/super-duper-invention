@@ -4,10 +4,13 @@ export const Colors = {
   // Surface / card background – slightly lighter for contrast
   secondary: '#1F2937',
   accent: {
-    // Primary accent for CTAs and highlights
+    // Primary accent for CTAs and ZiG
     gold: '#FFB100',
-    // Secondary accent for links / subtle highlights
+    // Secondary accent for USD and highlights
     blue: '#38BDF8',
+    // Supporting accent colors for visualizations
+    green: '#22C55E',
+    orange: '#F97316',
   },
 };
 

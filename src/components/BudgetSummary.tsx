@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingVertical: 4,
-    paddingHorizontal: 0,
+    paddingHorizontal: 16,
     gap: 12,
   },
   card: {

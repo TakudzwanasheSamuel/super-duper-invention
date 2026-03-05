@@ -1,6 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 'react-native';
-import BottomSheet from '@gorhom/bottom-sheet';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { Colors, Fonts } from '@/constants/theme';
 import * as Haptics from 'expo-haptics';
 import { useTransactionStore } from '@/store/useTransactionStore';
@@ -16,15 +15,31 @@ export default function QuickAddSheet() {
   const { addTransaction, currentExchangeRate } = useTransactionStore();
   const { categories } = useCategoryStore();
 
-  const snapPoints = useMemo(() => ['50%', '85%'], []);
-
   const handleLogTransaction = () => {
-    const amountInCents = Math.round(parseFloat(amount) * 100);
+    const trimmedAmount = amount.trim();
+    const parsedAmount = parseFloat(trimmedAmount.replace(/,/g, ''));
+
+    if (!trimmedAmount || isNaN(parsedAmount) || parsedAmount <= 0) {
+      Alert.alert('Amount required', 'Please enter a valid amount greater than 0.');
+      return;
+    }
+
+    if (selectedCategory == null) {
+      Alert.alert('Select a category', 'Please choose a category for this transaction.');
+      return;
+    }
+
+    const amountInCents = Math.round(parsedAmount * 100);
+    const effectiveRate =
+      currency === 'ZiG'
+        ? (parseFloat(rate) > 0 ? parseFloat(rate) : currentExchangeRate)
+        : currentExchangeRate;
+
     const transaction = {
       amount: amountInCents,
       currency,
       type,
-      rate: currency === 'ZiG' ? parseFloat(rate) || currentExchangeRate : currentExchangeRate,
+      rate: effectiveRate,
       category_id: selectedCategory as number,
       note: '', // You can add a note field if you want
       payment_method: 'cash', // Default or from another input
@@ -35,6 +50,7 @@ export default function QuickAddSheet() {
     setAmount('');
     setRate('');
     setSelectedCategory(null);
+    Alert.alert('Saved', 'Your transaction has been logged.');
   };
 
   const toggleType = (newType: 'income' | 'expense') => {
@@ -45,8 +61,9 @@ export default function QuickAddSheet() {
   const buttonColor = currency === 'ZiG' ? Colors.accent.gold : Colors.accent.blue;
 
   return (
-    <BottomSheet index={-1} snapPoints={snapPoints} style={styles.sheetContainer}>
+    <View style={styles.sheetContainer}>
       <View style={styles.contentContainer}>
+        <Text style={styles.sheetTitle}>Quick Add</Text>
         <TextInput
           style={styles.amountInput}
           placeholder="$0.00"
@@ -98,7 +115,11 @@ export default function QuickAddSheet() {
               style={[styles.categoryChip, selectedCategory === category.id && styles.activeCategory]}
               onPress={() => setSelectedCategory(category.id)}
             >
-              <MaterialIcons name={category.icon_name as any} size={24} color={selectedCategory === category.id ? 'white' : Colors.secondary} />
+              <MaterialIcons
+                name={category.icon_name as any}
+                size={24}
+                color={selectedCategory === category.id ? 'white' : Colors.secondary}
+              />
               <Text style={styles.categoryText}>{category.name}</Text>
             </TouchableOpacity>
           ))}
@@ -110,18 +131,27 @@ export default function QuickAddSheet() {
           <Text style={styles.logButtonText}>Log Transaction</Text>
         </TouchableOpacity>
       </View>
-    </BottomSheet>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   sheetContainer: {
     backgroundColor: Colors.background,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 12,
   },
   contentContainer: {
     flex: 1,
     alignItems: 'center',
     padding: 20,
+  },
+  sheetTitle: {
+    fontFamily: Fonts.heading,
+    fontSize: 16,
+    color: '#F9FAFB',
+    marginBottom: 8,
   },
   amountInput: {
     fontSize: 64,

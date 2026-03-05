@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import GroceryList from '@/components/GroceryList';
 import SubscriptionManager from '@/components/SubscriptionManager';
 import SpendSplitVisual from '@/components/SpendSplitVisual';
@@ -8,24 +8,37 @@ import { Colors, Fonts } from '@/constants/theme';
 
 export default function BudgetScreen() {
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      <Text style={styles.screenTitle}>Budget & Utilities</Text>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Savings Streak</Text>
-        <SavingsStreak />
+        <View style={styles.card}>
+          <SavingsStreak />
+        </View>
       </View>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Spend Split</Text>
-        <SpendSplitVisual />
+        <View style={styles.card}>
+          <SpendSplitVisual />
+        </View>
       </View>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Subscription Manager</Text>
-        <SubscriptionManager />
+        <View style={styles.card}>
+          <SubscriptionManager />
+        </View>
       </View>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Grocery Template</Text>
-        <GroceryList />
+        <View style={styles.card}>
+          <GroceryList />
+        </View>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -33,15 +46,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+    padding: 16,
+  },
+  screenTitle: {
+    fontFamily: Fonts.heading,
+    fontSize: 20,
+    color: '#F9FAFB',
+    marginBottom: 16,
   },
   section: {
-    marginBottom: 30,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontFamily: Fonts.heading,
-    fontSize: 28,
-    color: 'white',
-    textAlign: 'center',
-    marginVertical: 20,
+    fontSize: 14,
+    color: '#9CA3AF',
+    marginBottom: 8,
+  },
+  card: {
+    backgroundColor: Colors.secondary,
+    borderRadius: 16,
+    padding: 16,
   },
 });

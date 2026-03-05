@@ -11,7 +11,7 @@ export default function UtilityScreen() {
 
   React.useEffect(() => {
     fetchLastRate();
-  }, []);
+  }, [fetchLastRate]);
 
   const handleUpdateRate = () => {
     const rateValue = parseFloat(newRate);
@@ -25,10 +25,10 @@ export default function UtilityScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Utilities</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.screenTitle}>Utility</Text>
 
-      <View style={styles.rateUpdateContainer}>
+      <View style={styles.card}>
         <Text style={styles.currentRateLabel}>Current Rate (USD to ZiG)</Text>
         <Text style={styles.currentRate}>{lastRate.toFixed(2)}</Text>
         <TextInput
@@ -44,7 +44,9 @@ export default function UtilityScreen() {
         </TouchableOpacity>
       </View>
 
-      <RateHistoryChart />
+      <View style={styles.card}>
+        <RateHistoryChart />
+      </View>
     </ScrollView>
   );
 }
@@ -53,30 +55,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-    padding: 15,
   },
-  header: {
+  content: {
+    padding: 16,
+    paddingBottom: 24,
+    gap: 16,
+  },
+  screenTitle: {
     fontFamily: Fonts.heading,
-    fontSize: 32,
-    color: 'white',
-    textAlign: 'center',
-    marginVertical: 20,
+    fontSize: 20,
+    color: '#F9FAFB',
   },
-  rateUpdateContainer: {
-    backgroundColor: '#1A1A24',
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 20,
-    alignItems: 'center',
+  card: {
+    backgroundColor: Colors.secondary,
+    borderRadius: 16,
+    padding: 16,
   },
   currentRateLabel: {
     fontFamily: Fonts.body,
-    fontSize: 16,
-    color: Colors.secondary,
+    fontSize: 14,
+    color: '#9CA3AF',
   },
   currentRate: {
-    fontFamily: Fonts.heading,
-    fontSize: 48,
+    fontFamily: 'JetBrainsMono_400Regular',
+    fontSize: 32,
     color: Colors.accent.gold,
     marginVertical: 10,
   },

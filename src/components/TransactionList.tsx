@@ -7,9 +7,10 @@ import { useCategoryStore } from '@/store/useCategoryStore';
 
 type TransactionListProps = {
   transactions: TransactionRow[];
+  footer?: React.ReactNode;
 };
 
-export default function TransactionList({ transactions }: TransactionListProps) {
+export default function TransactionList({ transactions, footer }: TransactionListProps) {
   const { categories } = useCategoryStore();
 
   const getCategory = (categoryId: number) => {
@@ -63,6 +64,16 @@ export default function TransactionList({ transactions }: TransactionListProps) 
       ListHeaderComponent={
         <Text style={styles.sectionTitle}>Recent Transactions</Text>
       }
+      ListEmptyComponent={
+        <View style={styles.emptyStateContainer}>
+          <View style={styles.emptyStateBody}>
+            <Text style={styles.emptyStateText}>
+              No recent transactions yet. Use Quick Add below to start.
+            </Text>
+          </View>
+        </View>
+      }
+      ListFooterComponent={footer ?? null}
       contentContainerStyle={styles.listContent}
     />
   );
@@ -77,7 +88,28 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.heading,
     fontSize: 18,
     color: '#F9FAFB',
+    fontWeight: '700',
     marginBottom: 8,
+  },
+  emptyStateContainer: {
+    paddingTop: 8,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+  },
+  emptyStateBody: {
+    marginTop: 8,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: Colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    fontFamily: Fonts.body,
+    fontSize: 14,
+    color: '#9CA3AF',
+    textAlign: 'center',
   },
   row: {
     flexDirection: 'row',

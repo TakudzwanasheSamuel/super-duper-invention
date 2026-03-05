@@ -100,8 +100,6 @@ export default function SubscriptionManager() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
-    padding: 20,
   },
   headerContainer: {
     alignItems: 'center',
@@ -121,9 +119,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   card: {
-    backgroundColor: '#222',
-    borderRadius: 15,
-    padding: 15,
+    backgroundColor: Colors.secondary,
+    borderRadius: 12,
+    padding: 12,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 15,

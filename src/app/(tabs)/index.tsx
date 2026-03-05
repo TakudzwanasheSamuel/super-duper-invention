@@ -22,29 +22,25 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
+      <View style={styles.header}>
         <Image
           source={require('../../../assets/images/logo.png')}
           style={styles.logo}
           contentFit="contain"
         />
-        <View style={styles.greetingContainer}>
-          <Text style={styles.greetingText}>Hi, {userName || 'there'}</Text>
-          <Text style={styles.greetingSubText}>Here’s your financial overview.</Text>
-        </View>
-        <TouchableOpacity style={styles.iconButton}>
-          <Ionicons name="person-circle-outline" size={24} color="#F9FAFB" />
-        </TouchableOpacity>
+        <Text style={styles.greetingText}>Hi, {userName || 'there'}</Text>
+        <Text style={styles.greetingSubText}>Here’s your financial overview.</Text>
       </View>
 
       <BudgetSummary />
-      <TransactionList transactions={transactions} />
+      <TransactionList
+        transactions={transactions}
+        footer={<QuickAddSheet />}
+      />
 
       <TouchableOpacity style={styles.fab}>
         <Ionicons name="add" size={28} color="#FFFFFF" />
       </TouchableOpacity>
-
-      <QuickAddSheet />
     </View>
   );
 }
@@ -53,34 +49,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: Colors.background,
   },
-  headerRow: {
-    flexDirection: 'row',
+  header: {
     alignItems: 'center',
     marginBottom: 16,
-    gap: 16,
   },
   logo: {
-    width: 72,
-    height: 72,
-  },
-  greetingContainer: {
-    flex: 1,
+    width: 88,
+    height: 88,
   },
   greetingText: {
     fontFamily: Fonts.heading,
-    fontSize: FontSize['2xl'],
-    color: 'white',
+    fontSize: FontSize.lg,
+    color: '#F9FAFB',
     fontWeight: '700',
+    marginTop: 12,
   },
   greetingSubText: {
     fontFamily: Fonts.body,
     fontSize: FontSize.base,
     color: '#9CA3AF',
     marginTop: 4,
-  },
-  iconButton: {
-    padding: 4,
   },
   fab: {
     position: 'absolute',
@@ -93,6 +83,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 6,
+    zIndex: 10,
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 6,
