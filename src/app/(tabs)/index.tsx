@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import TransactionList from '@/components/TransactionList';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useCategoryStore } from '@/store/useCategoryStore';
@@ -14,6 +16,7 @@ export default function HomeScreen() {
   const { transactions, fetchTransactions } = useTransactionStore();
   const { fetchCategories } = useCategoryStore();
   const { userName } = useUserStore();
+  const router = useRouter();
 
   useEffect(() => {
     fetchTransactions();
@@ -21,39 +24,48 @@ export default function HomeScreen() {
   }, [fetchTransactions, fetchCategories]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Image
-          source={require('../../../assets/images/logo.png')}
-          style={styles.logo}
-          contentFit="contain"
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Image
+            source={require('../../../assets/images/logo.png')}
+            style={styles.logo}
+            contentFit="contain"
+          />
+          <Text style={styles.greetingText}>Hi, {userName || 'there'}</Text>
+          <Text style={styles.greetingSubText}>Here’s your financial overview.</Text>
+        </View>
+
+        <BudgetSummary />
+        <TransactionList
+          transactions={transactions}
+          footer={<QuickAddSheet />}
         />
-        <Text style={styles.greetingText}>Hi, {userName || 'there'}</Text>
-        <Text style={styles.greetingSubText}>Here’s your financial overview.</Text>
+
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push('/budget')}
+        >
+          <Ionicons name="add" size={28} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
-
-      <BudgetSummary />
-      <TransactionList
-        transactions={transactions}
-        footer={<QuickAddSheet />}
-      />
-
-      <TouchableOpacity style={styles.fab}>
-        <Ionicons name="add" size={28} color="#FFFFFF" />
-      </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: Colors.background,
   },
   header: {
     alignItems: 'center',
     marginBottom: 16,
+    paddingTop: 12,
   },
   logo: {
     width: 88,

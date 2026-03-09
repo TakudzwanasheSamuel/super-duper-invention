@@ -24,9 +24,11 @@ export default function QuickAddSheet() {
       return;
     }
 
-    if (selectedCategory == null) {
-      Alert.alert('Select a category', 'Please choose a category for this transaction.');
-      return;
+    let categoryId = selectedCategory;
+
+    if (categoryId == null) {
+      const fallbackCategory = categories.find(c => c.type === type);
+      categoryId = fallbackCategory ? fallbackCategory.id : null;
     }
 
     const amountInCents = Math.round(parsedAmount * 100);
@@ -40,7 +42,7 @@ export default function QuickAddSheet() {
       currency,
       type,
       rate: effectiveRate,
-      category_id: selectedCategory as number,
+      category_id: categoryId as number | null,
       note: '', // You can add a note field if you want
       payment_method: 'cash', // Default or from another input
       timestamp: Date.now(),
@@ -67,6 +69,7 @@ export default function QuickAddSheet() {
         <TextInput
           style={styles.amountInput}
           placeholder="$0.00"
+          placeholderTextColor={Colors.accent.blue}
           keyboardType="numeric"
           value={amount}
           onChangeText={setAmount}
@@ -89,6 +92,7 @@ export default function QuickAddSheet() {
           <TextInput
             style={styles.rateInput}
             placeholder={`Current Market Rate? (Default: ${currentExchangeRate})`}
+            placeholderTextColor={Colors.accent.blue}
             keyboardType="numeric"
             value={rate}
             onChangeText={setRate}
@@ -109,20 +113,25 @@ export default function QuickAddSheet() {
           </TouchableOpacity>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroller}>
-          {categories.filter(c => c.type === type).map(category => (
-            <TouchableOpacity
-              key={category.id}
-              style={[styles.categoryChip, selectedCategory === category.id && styles.activeCategory]}
-              onPress={() => setSelectedCategory(category.id)}
-            >
-              <MaterialIcons
-                name={category.icon_name as any}
-                size={24}
-                color={selectedCategory === category.id ? 'white' : Colors.secondary}
-              />
-              <Text style={styles.categoryText}>{category.name}</Text>
-            </TouchableOpacity>
-          ))}
+          {categories.filter(c => c.type === type).map(category => {
+            const isActive = selectedCategory === category.id;
+            return (
+              <TouchableOpacity
+                key={category.id}
+                style={[styles.categoryChip, isActive && styles.activeCategory]}
+                onPress={() => setSelectedCategory(category.id)}
+              >
+                <MaterialIcons
+                  name={category.icon_name as any}
+                  size={24}
+                  color={isActive ? '#FFFFFF' : Colors.accent.blue}
+                />
+                <Text style={[styles.categoryText, isActive && styles.activeCategoryText]}>
+                  {category.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
         <TouchableOpacity
           style={[styles.logButton, { backgroundColor: buttonColor }]}
@@ -168,25 +177,25 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: Colors.secondary,
+    borderColor: Colors.accent.blue,
     marginHorizontal: 10,
   },
   activeButton: {
-    backgroundColor: Colors.secondary,
+    backgroundColor: Colors.accent.blue,
   },
   toggleText: {
-    color: 'white',
+    color: '#E5E7EB',
     fontFamily: Fonts.body,
   },
   activeText: {
-    color: Colors.background,
+    color: '#0B1120',
   },
   rateInput: {
     width: '80%',
     padding: 10,
     borderBottomWidth: 1,
-    borderColor: Colors.secondary,
-    color: 'white',
+    borderColor: Colors.accent.blue,
+    color: '#F9FAFB',
     textAlign: 'center',
     marginVertical: 10,
   },
@@ -202,11 +211,17 @@ const styles = StyleSheet.create({
     marginHorizontal: 15,
   },
   activeCategory: {
-    // Add some highlight for active category
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#1E293B',
   },
   categoryText: {
-    color: Colors.secondary,
+    color: '#E5E7EB',
     marginTop: 5,
+  },
+  activeCategoryText: {
+    color: '#FFFFFF',
   },
   logButton: {
     width: '90%',

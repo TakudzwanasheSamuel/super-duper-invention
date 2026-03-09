@@ -2,10 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Svg, Circle, G, Text as SvgText } from 'react-native-svg';
 import { useTransactionStore } from '@/store/useTransactionStore';
+import { useUserStore } from '@/store/useUserStore';
 import { Colors, Fonts } from '@/constants/theme';
 
 export default function SpendSplitVisual() {
   const { getCardSpend, getCashSpend, paymentMethodFilter, setPaymentMethodFilter } = useTransactionStore();
+  const { primaryCurrency } = useUserStore();
 
   const cardSpend = getCardSpend();
   const cashSpend = getCashSpend();
@@ -48,26 +50,26 @@ export default function SpendSplitVisual() {
           />
         </G>
         <SvgText
-            x="100"
-            y="95"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-            fill="white"
-            fontSize={24}
-            fontFamily={Fonts.heading}
+          x="100"
+          y="95"
+          textAnchor="middle"
+          alignmentBaseline="middle"
+          fill="white"
+          fontSize={24}
+          fontFamily={Fonts.heading}
         >
-            ${totalSpend.toFixed(2)}
+          {totalSpend.toFixed(2)}
         </SvgText>
         <SvgText
-            x="100"
-            y="120"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-            fill={Colors.secondary}
-            fontSize={14}
-            fontFamily={Fonts.body}
+          x="100"
+          y="120"
+          textAnchor="middle"
+          alignmentBaseline="middle"
+          fill={Colors.secondary}
+          fontSize={14}
+          fontFamily={Fonts.body}
         >
-            Total Spend
+          {`Total Spend (${primaryCurrency})`}
         </SvgText>
       </Svg>
       <View style={styles.legend}>

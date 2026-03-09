@@ -29,7 +29,14 @@ export default function SavingsStreak() {
         onPress={handleCheckIn}
         disabled={hasCheckedIn}
       >
-        <Text style={styles.checkInButtonText}>{hasCheckedIn ? 'Checked In!' : 'Meet Monthly Goal ($20)'}</Text>
+        <Text
+          style={[
+            styles.checkInButtonText,
+            hasCheckedIn && styles.checkInButtonTextDisabled,
+          ]}
+        >
+          {hasCheckedIn ? 'Checked In!' : 'Meet Monthly Goal ($20)'}
+        </Text>
       </TouchableOpacity>
       {showConfetti && <ConfettiCannon count={200} origin={{ x: -10, y: 0 }} onAnimationEnd={() => setShowConfetti(false)} />}
     </View>
@@ -63,7 +70,10 @@ const styles = StyleSheet.create({
   checkInButtonText: {
     fontFamily: Fonts.body,
     fontSize: 18,
-    color: 'black',
+    color: '#0B1120',
     fontWeight: 'bold',
+  },
+  checkInButtonTextDisabled: {
+    color: '#E5E7EB',
   },
 });

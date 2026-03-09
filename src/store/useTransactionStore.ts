@@ -15,6 +15,8 @@ type State = {
 
 type Actions = {
   addTransaction: (transaction: Omit<TransactionRow, 'id'>) => void;
+  updateTransaction: (transaction: TransactionRow) => void;
+  deleteTransaction: (id: number) => void;
   fetchTransactions: () => void;
   updateRate: (newRate: number) => void;
   getConvertedBalance: () => number;
@@ -76,6 +78,38 @@ export const useTransactionStore = create<State & Actions>((set, get) => ({
           console.error('Error adding transaction:', error);
           return true;
         }
+      );
+    });
+  },
+
+  updateTransaction: (transaction) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'UPDATE transactions SET type=?, amount=?, currency=?, rate=?, category_id=?, note=?, payment_method=?, timestamp=? WHERE id=?',
+        [
+          transaction.type,
+          transaction.amount,
+          transaction.currency,
+          transaction.rate,
+          transaction.category_id,
+          transaction.note,
+          transaction.payment_method,
+          transaction.timestamp,
+          transaction.id,
+        ],
+        () => { get().fetchTransactions(); },
+        (_, error) => { console.error('Error updating transaction:', error); return true; }
+      );
+    });
+  },
+
+  deleteTransaction: (id) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'DELETE FROM transactions WHERE id = ?',
+        [id],
+        () => { get().fetchTransactions(); },
+        (_, error) => { console.error('Error deleting transaction:', error); return true; }
       );
     });
   },

@@ -27,7 +27,7 @@
           "data": [
             {
               "scheme": "mybudget",
-              "host": "add"
+              "host": "budget"
             }
           ],
           "category": [

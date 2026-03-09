@@ -6,10 +6,12 @@ import { Colors, Fonts } from '@/constants/theme';
 import { GroceryItemRow } from '@/api/db';
 
 export default function GroceryList() {
-  const { groceryItems, fetchGroceryItems, updateGroceryItem, resetList, finalizeShopping } = useGroceryStore();
+  const { groceryItems, fetchGroceryItems, addGroceryItem, updateGroceryItem, resetList, finalizeShopping } = useGroceryStore();
   const [editingItem, setEditingItem] = useState<GroceryItemRow | null>(null);
   const [newName, setNewName] = useState('');
   const [newPrice, setNewPrice] = useState('');
+  const [addName, setAddName] = useState('');
+  const [addPrice, setAddPrice] = useState('');
 
   React.useEffect(() => {
     fetchGroceryItems();
@@ -54,13 +56,48 @@ export default function GroceryList() {
     </View>
   );
 
+  const handleAddItem = () => {
+    const trimmed = addName.trim();
+    if (!trimmed) {
+      Alert.alert('Name required', 'Enter a grocery item name.');
+      return;
+    }
+    const price = parseFloat(addPrice) || 0;
+    addGroceryItem({ name: trimmed, default_price: Math.round(price * 100), currency: 'USD' });
+    setAddName('');
+    setAddPrice('');
+  };
+
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>Standard Monthly List</Text>
+
+      <View style={styles.addRow}>
+        <TextInput
+          style={styles.addInput}
+          placeholder="Item name"
+          placeholderTextColor={Colors.accent.blue}
+          value={addName}
+          onChangeText={setAddName}
+        />
+        <TextInput
+          style={[styles.addInput, { width: 80 }]}
+          placeholder="Price"
+          placeholderTextColor={Colors.accent.blue}
+          keyboardType="numeric"
+          value={addPrice}
+          onChangeText={setAddPrice}
+        />
+        <TouchableOpacity style={styles.addItemButton} onPress={handleAddItem}>
+          <Text style={styles.addItemButtonText}>+</Text>
+        </TouchableOpacity>
+      </View>
+
       <FlatList
         data={groceryItems}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
-        ListHeaderComponent={() => <Text style={styles.header}>Standard Monthly List</Text>}
+        scrollEnabled={false}
       />
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={resetList}>
@@ -107,6 +144,37 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: Fonts.body,
     fontSize: 16,
+  },
+  addRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  addInput: {
+    flex: 1,
+    backgroundColor: '#0A0A0A',
+    color: '#F9FAFB',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.accent.blue,
+    fontFamily: Fonts.body,
+    fontSize: 14,
+  },
+  addItemButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.accent.gold,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addItemButtonText: {
+    fontSize: 20,
+    color: '#0B1120',
+    fontWeight: '700',
   },
   buttonContainer: {
     flexDirection: 'row',

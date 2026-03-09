@@ -1,6 +1,8 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import RateHistoryChart from '@/components/charts/RateHistoryChart';
+import CategoryManager from '@/components/CategoryManager';
 import { Colors, Fonts } from '@/constants/theme';
 import { useRateStore } from '@/store/useRateStore';
 import * as Haptics from 'expo-haptics';
@@ -25,33 +27,43 @@ export default function UtilityScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.screenTitle}>Utility</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.screenTitle}>Utility</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.currentRateLabel}>Current Rate (USD to ZiG)</Text>
-        <Text style={styles.currentRate}>{lastRate.toFixed(2)}</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter New Market Rate"
-          placeholderTextColor={Colors.secondary}
-          keyboardType="numeric"
-          value={newRate}
-          onChangeText={setNewRate}
-        />
-        <TouchableOpacity style={styles.updateButton} onPress={handleUpdateRate}>
-          <Text style={styles.updateButtonText}>Update Rate</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.card}>
+          <Text style={styles.currentRateLabel}>Current Rate (USD to ZiG)</Text>
+          <Text style={styles.currentRate}>{lastRate.toFixed(2)}</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter New Market Rate"
+            placeholderTextColor={Colors.accent.blue}
+            keyboardType="numeric"
+            value={newRate}
+            onChangeText={setNewRate}
+          />
+          <TouchableOpacity style={styles.updateButton} onPress={handleUpdateRate}>
+            <Text style={styles.updateButtonText}>Update Rate</Text>
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.card}>
-        <RateHistoryChart />
-      </View>
-    </ScrollView>
+        <View style={styles.card}>
+          <RateHistoryChart />
+        </View>
+
+        <View style={styles.card}>
+          <CategoryManager />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: Colors.background,
@@ -65,6 +77,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.heading,
     fontSize: 20,
     color: '#F9FAFB',
+    paddingTop: 12,
   },
   card: {
     backgroundColor: Colors.secondary,
@@ -84,7 +97,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: '#0A0A0A',
-    color: 'white',
+    color: '#F9FAFB',
     width: '100%',
     padding: 15,
     borderRadius: 10,
@@ -93,7 +106,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: Colors.accent.blue,
   },
   updateButton: {
     backgroundColor: Colors.accent.gold,

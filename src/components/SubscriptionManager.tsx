@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useSubscriptionStore } from '@/store/useSubscriptionStore';
 import { useCategoryStore } from '@/store/useCategoryStore';
 import { useRateStore } from '@/store/useRateStore';
@@ -21,17 +21,49 @@ export default function SubscriptionManager() {
 
   const handleAddSubscription = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const subscriptionsCategory = categories.find(c => c.name === 'Subscriptions');
+
+    const trimmedName = serviceName.trim();
+    const amountValue = parseFloat(amount);
+    const billingDayValue = parseInt(billingDay, 10);
+
+    if (!trimmedName) {
+      Alert.alert('Service name required', 'Please enter the subscription/service name.');
+      return;
+    }
+
+    if (isNaN(amountValue) || amountValue <= 0) {
+      Alert.alert('Amount required', 'Please enter a valid positive amount.');
+      return;
+    }
+
+    if (
+      isNaN(billingDayValue) ||
+      billingDayValue < 1 ||
+      billingDayValue > 31
+    ) {
+      Alert.alert('Billing day invalid', 'Please enter a day between 1 and 31.');
+      return;
+    }
+
+    // Prefer a dedicated "Subscriptions" expense category; otherwise fall back
+    const subscriptionsCategory =
+      categories.find(c => c.name === 'Subscriptions' && c.type === 'expense') ??
+      categories.find(c => c.type === 'expense') ??
+      null;
+
     if (!subscriptionsCategory) {
-      console.error('Subscriptions category not found!');
+      Alert.alert(
+        'No expense categories',
+        'Please create at least one expense category in the Utility → Categories section before adding subscriptions.',
+      );
       return;
     }
 
     addSubscription({
-      service_name: serviceName,
-      amount: Math.round(parseFloat(amount) * 100),
+      service_name: trimmedName,
+      amount: Math.round(amountValue * 100),
       currency: 'USD',
-      billing_day: parseInt(billingDay, 10),
+      billing_day: billingDayValue,
       category_id: subscriptionsCategory.id,
     });
 
@@ -67,17 +99,20 @@ export default function SubscriptionManager() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
         style={styles.list}
+        scrollEnabled={false}
       />
       <View style={styles.addForm}>
         <TextInput
           style={styles.input}
           placeholder="Service Name (e.g., Netflix)"
+          placeholderTextColor={Colors.accent.blue}
           value={serviceName}
           onChangeText={setServiceName}
         />
         <TextInput
           style={styles.input}
           placeholder="Amount"
+          placeholderTextColor={Colors.accent.blue}
           keyboardType="numeric"
           value={amount}
           onChangeText={setAmount}
@@ -85,6 +120,7 @@ export default function SubscriptionManager() {
         <TextInput
           style={styles.input}
           placeholder="Billing Day (1-31)"
+          placeholderTextColor={Colors.accent.blue}
           keyboardType="numeric"
           value={billingDay}
           onChangeText={setBillingDay}
@@ -138,7 +174,7 @@ const styles = StyleSheet.create({
   cardAmount: {
     fontFamily: Fonts.body,
     fontSize: 16,
-    color: Colors.secondary,
+    color: '#E5E7EB',
   },
   projectedCost: {
     fontFamily: Fonts.body,
@@ -148,7 +184,7 @@ const styles = StyleSheet.create({
   cardBillingDay: {
     fontFamily: Fonts.body,
     fontSize: 14,
-    color: Colors.secondary,
+    color: '#9CA3AF',
   },
   addForm: {
     marginTop: 20,

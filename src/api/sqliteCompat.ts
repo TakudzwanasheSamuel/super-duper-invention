@@ -44,13 +44,24 @@ function createTransaction<T = any>(db: SQLiteDatabase): LegacyTransaction<T> {
   };
 }
 
-export function openLegacyDatabase(name: string): { transaction: (cb: (tx: LegacyTransaction) => void) => void } {
+export function openLegacyDatabase(name: string): {
+  transaction: (
+    cb: (tx: LegacyTransaction) => void,
+    errorCb?: (error: unknown) => void,
+    successCb?: () => void,
+  ) => void;
+} {
   const db = openDatabaseSync(name);
 
   return {
-    transaction(callback) {
-      const tx = createTransaction(db);
-      callback(tx);
+    transaction(callback, errorCb?, successCb?) {
+      try {
+        const tx = createTransaction(db);
+        callback(tx);
+        successCb?.();
+      } catch (error) {
+        errorCb?.(error);
+      }
     },
   };
 }

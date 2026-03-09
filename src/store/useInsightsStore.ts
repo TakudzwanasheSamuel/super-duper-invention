@@ -126,15 +126,16 @@ export const useInsightsStore = create<State & Actions>((set, get) => ({
     db.transaction(tx => {
       tx.executeSql(
         `SELECT
-          category,
-          SUM(CASE WHEN currency = ? THEN amount ELSE amount * ? END) as total_spent
-        FROM transactions
-        WHERE type = 'expense' AND timestamp >= ?
-        GROUP BY category;`,
+          COALESCE(c.name, 'Uncategorized') as category_name,
+          SUM(CASE WHEN t.currency = ? THEN t.amount ELSE t.amount * ? END) as total_spent
+        FROM transactions t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.type = 'expense' AND t.timestamp >= ?
+        GROUP BY category_name;`,
         [primaryCurrency, primaryCurrency === 'USD' ? 1 / lastRate : lastRate, firstDayOfMonth.getTime()],
         (_, { rows }) => {
           const data: CategorySpending[] = rows._array.map(row => ({
-            category: row.category,
+            category: row.category_name,
             total: row.total_spent / 100,
           }));
           const total = data.reduce((acc, curr) => acc + curr.total, 0);

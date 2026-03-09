@@ -45,15 +45,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'compass' : 'compass-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="utility"
         options={{
           title: 'Utility',

@@ -6,8 +6,12 @@ import { useUserStore } from '@/store/useUserStore';
 import { Colors, Fonts } from '@/constants/theme';
 
 export default function CategoryBreakdownChart() {
-  const { categorySpending, totalSpent } = useInsightsStore();
+  const { categorySpending, totalSpent, fetchCategorySpending } = useInsightsStore();
   const { primaryCurrency } = useUserStore();
+
+  React.useEffect(() => {
+    fetchCategorySpending();
+  }, [fetchCategorySpending]);
 
   const topCategories = [...categorySpending]
     .sort((a, b) => b.total - a.total)
