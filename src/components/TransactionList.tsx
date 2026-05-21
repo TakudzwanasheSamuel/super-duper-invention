@@ -4,16 +4,20 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { TransactionRow } from '@/api/db';
 import { Colors, Fonts } from '@/constants/theme';
 import { useCategoryStore } from '@/store/useCategoryStore';
+import { formatCurrency } from '@/utils/finance';
 
 type TransactionListProps = {
   transactions: TransactionRow[];
-  footer?: React.ReactNode;
+  // FlatList's ListFooterComponent only accepts elements/components, not
+  // arbitrary ReactNode (no raw strings/numbers). Restrict accordingly.
+  footer?: React.ReactElement | null;
 };
 
 export default function TransactionList({ transactions, footer }: TransactionListProps) {
   const { categories } = useCategoryStore();
 
-  const getCategory = (categoryId: number) => {
+  const getCategory = (categoryId: number | null) => {
+    if (categoryId == null) return null;
     return categories.find(c => c.id === categoryId) ?? null;
   };
 
@@ -22,9 +26,8 @@ export default function TransactionList({ transactions, footer }: TransactionLis
     const name = category?.name ?? 'Uncategorized';
     const iconName = (category?.icon_name as any) || 'category';
 
-    const amountText = `${item.type === 'income' ? '+' : '-'}${(item.amount / 100).toFixed(2)} ${
-      item.currency
-    }`;
+    const signedAmount = (item.amount / 100) * (item.type === 'income' ? 1 : -1);
+    const amountText = formatCurrency(signedAmount, item.currency, { showSign: true });
 
     return (
       <View style={styles.row}>

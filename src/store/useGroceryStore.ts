@@ -3,6 +3,8 @@ import { openLegacyDatabase } from '@/api/sqliteCompat';
 import { GroceryItemRow } from '@/api/db';
 import { useTransactionStore } from './useTransactionStore';
 import { useCategoryStore } from './useCategoryStore';
+import { useUserStore } from './useUserStore';
+import { useRateStore } from './useRateStore';
 
 const db = openLegacyDatabase('dark-luxury.db');
 
@@ -14,6 +16,7 @@ type Actions = {
   fetchGroceryItems: () => void;
   addGroceryItem: (item: Omit<GroceryItemRow, 'id' | 'is_checked'>) => void;
   updateGroceryItem: (item: GroceryItemRow) => void;
+  deleteGroceryItem: (id: number) => void;
   resetList: () => void;
   finalizeShopping: () => void;
 };
@@ -69,6 +72,22 @@ export const useGroceryStore = create<State & Actions>((set, get) => ({
     });
   },
 
+  deleteGroceryItem: (id) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'DELETE FROM grocery_items WHERE id = ?',
+        [id],
+        () => {
+          get().fetchGroceryItems();
+        },
+        (_, error) => {
+          console.error('Error deleting grocery item:', error);
+          return true;
+        }
+      );
+    });
+  },
+
   resetList: () => {
     db.transaction(tx => {
       tx.executeSql(
@@ -89,6 +108,8 @@ export const useGroceryStore = create<State & Actions>((set, get) => ({
     const { groceryItems } = get();
     const { addTransaction } = useTransactionStore.getState();
     const { categories } = useCategoryStore.getState();
+    const { primaryCurrency } = useUserStore.getState();
+    const { lastRate } = useRateStore.getState();
 
     const checkedItems = groceryItems.filter(item => item.is_checked);
     if (checkedItems.length === 0) {
@@ -97,18 +118,17 @@ export const useGroceryStore = create<State & Actions>((set, get) => ({
 
     const total = checkedItems.reduce((sum, item) => sum + item.default_price, 0);
 
-    const groceriesCategory = categories.find(c => c.name === 'Groceries');
-    if (!groceriesCategory) {
-      console.error('Groceries category not found!');
-      return;
-    }
+    const groceriesCategory =
+      categories.find(c => c.name === 'Groceries' && c.type === 'expense') ??
+      categories.find(c => c.type === 'expense') ??
+      null;
 
     addTransaction({
       type: 'expense',
       amount: total,
-      currency: 'USD', // Assuming all grocery items are in the primary currency for now
-      rate: 1.0,
-      category_id: groceriesCategory.id,
+      currency: primaryCurrency,
+      rate: lastRate || 1.0,
+      category_id: groceriesCategory ? groceriesCategory.id : null,
       note: 'Grocery Shopping',
       payment_method: 'cash', // Or allow user to select
       timestamp: Date.now(),

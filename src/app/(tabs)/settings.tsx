@@ -13,9 +13,9 @@ import { useUserStore } from '@/store/useUserStore';
 import { Colors, Fonts } from '@/constants/theme';
 import * as SecureStore from 'expo-secure-store';
 import { openLegacyDatabase } from '@/api/sqliteCompat';
+import { PIN_KEY } from '@/constants/auth';
 
 const db = openLegacyDatabase('dark-luxury.db');
-const PIN_KEY = 'user_pin';
 
 export default function SettingsScreen() {
   const { themeMode, setThemeMode, userName, setUserName } = useUserStore();

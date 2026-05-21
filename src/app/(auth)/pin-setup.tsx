@@ -5,12 +5,13 @@ import * as SecureStore from 'expo-secure-store';
 import * as Haptics from 'expo-haptics';
 import { Colors, Fonts } from '@/constants/theme';
 import { Stack, useRouter } from 'expo-router';
-
-const PIN_KEY = 'user_pin';
+import { PIN_KEY } from '@/constants/auth';
+import { useUserStore } from '@/store/useUserStore';
 
 export default function PinSetupScreen() {
   const [pin, setPin] = useState('');
   const router = useRouter();
+  const setUnlocked = useUserStore(s => s.setUnlocked);
 
   const handlePinInput = async (num: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -20,6 +21,7 @@ export default function PinSetupScreen() {
       if (newPin.length === 4) {
         await SecureStore.setItemAsync(PIN_KEY, newPin);
         setPin('');
+        setUnlocked(true);
         router.replace('/(tabs)');
       }
     }

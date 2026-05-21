@@ -1,51 +1,59 @@
-import React from 'react';
-import { registerWidget, openApp, a } from 'react-native-android-widget';
+/**
+ * Android widget entrypoint.
+ *
+ * NOTE: This file is currently stubbed.
+ *
+ * The original implementation was written against an old API
+ * (`registerWidget`, `openApp`, `a`) that no longer exists in
+ * `react-native-android-widget@0.20.x`. The current version exports
+ * declarative widget components (`FlexWidget`, `TextWidget`, `IconWidget`,
+ * `ImageWidget`, etc.) and uses a widget-task-handler registration pattern.
+ *
+ * The widget config plugin in `app.json` still declares `SmallWidget` and
+ * `MediumWidget` so the install/uninstall flow stays consistent. When we're
+ * ready to ship widgets we'll rewrite this file against the v0.20 API.
+ *
+ * Until then, this module exposes the pure data-helpers we want the widget to
+ * eventually use, so the rewrite is mechanical.
+ */
 import { useUserStore } from '@/store/useUserStore';
 import { useTransactionStore } from '@/store/useTransactionStore';
+import { useRateStore } from '@/store/useRateStore';
+import { useCategoryStore } from '@/store/useCategoryStore';
+import {
+  computeNetBalance,
+  computeTodaySpend,
+  formatCurrency,
+} from '@/utils/finance';
 
-const SmallWidget = () => {
-  const { netBalance, primaryCurrency } = useUserStore();
-  
-  return (
-    <a.small_widget_layout
-      onClick={openApp}
-      childs={[
-        <a.TextView id="@+id/tv_balance_label" text="Net Balance" />,
-        <a.TextView id="@+id/tv_balance" text={`${primaryCurrency} ${netBalance.toFixed(2)}`} />,
-        <a.ImageButton
-          id="@+id/btn_quick_add"
-          onClick={openApp.withUrl('mybudget://budget')}
-          src="@drawable/ic_add"
-        />,
-      ]}
-    />
-  );
-};
+export function getNetBalanceText(): string {
+  const { primaryCurrency } = useUserStore.getState();
+  const { transactions } = useTransactionStore.getState();
+  const { lastRate } = useRateStore.getState();
+  const balance = computeNetBalance(transactions, primaryCurrency, lastRate);
+  return formatCurrency(balance, primaryCurrency);
+}
 
-const MediumWidget = () => {
-  const { netBalance, primaryCurrency } = useUserStore();
-  const { transactions } = useTransactionStore();
+export function getTodaySpendText(): string {
+  const { primaryCurrency } = useUserStore.getState();
+  const { transactions } = useTransactionStore.getState();
+  const { lastRate } = useRateStore.getState();
+  const todaySpend = computeTodaySpend(transactions, primaryCurrency, lastRate);
+  return formatCurrency(todaySpend, primaryCurrency);
+}
 
-  const todaySpending = transactions
-    .filter(t => new Date(t.timestamp).toDateString() === new Date().toDateString())
-    .reduce((acc, t) => acc + (t.currency === primaryCurrency ? t.amount : t.amount * 1), 0);
+export function getLastTransactionLabel(): string {
+  const { transactions } = useTransactionStore.getState();
+  const { categories } = useCategoryStore.getState();
 
-  const lastTransaction = transactions[0] ? `${transactions[0].name}: ${transactions[0].amount}` : 'No recent transactions';
+  if (transactions.length === 0) return 'No recent transactions';
 
-  return (
-    <a.medium_widget_layout
-      onClick={openApp}
-      childs={[
-        <a.TextView id="@+id/tv_balance_label" text="Net Balance" />,
-        <a.TextView id="@+id/tv_balance" text={`${primaryCurrency} ${netBalance.toFixed(2)}`} />,
-        <a.TextView id="@+id/tv_today_spending_label" text="Today's Spending" />,
-        <a.TextView id="@+id/tv_today_spending" text={`${primaryCurrency} ${todaySpending.toFixed(2)}`} />,
-        <a.TextView id="@+id/tv_last_transaction_label" text="Last Transaction" />,
-        <a.TextView id="@+id/tv_last_transaction" text={lastTransaction} />,
-      ]}
-    />
-  );
-};
+  const sorted = [...transactions].sort((a, b) => b.timestamp - a.timestamp);
+  const last = sorted[0];
+  const category =
+    last.category_id != null ? categories.find(c => c.id === last.category_id) : undefined;
+  const label = last.note?.trim() || category?.name || 'Transaction';
+  return `${label}: ${formatCurrency(last.amount / 100, last.currency)}`;
+}
 
-registerWidget('small_widget', 'small', SmallWidget);
-registerWidget('medium_widget', 'medium', MediumWidget);
+export const WIDGET_DEEP_LINK = 'mybudget://budget';

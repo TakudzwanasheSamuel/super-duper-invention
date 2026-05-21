@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, AppState } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Haptics from 'expo-haptics';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { Colors, Fonts } from '@/constants/theme';
 import { useRouter } from 'expo-router';
-
-const PIN_KEY = 'user_pin';
-const LAST_ACTIVE_TIMESTAMP_KEY = 'last_active_timestamp';
+import { PIN_KEY } from '@/constants/auth';
+import { useUserStore } from '@/store/useUserStore';
 
 export default function PinLockScreen() {
   const [pin, setPin] = useState('');
   const [isPinSet, setIsPinSet] = useState(false);
   const router = useRouter();
+  const setUnlocked = useUserStore(s => s.setUnlocked);
+
+  const unlockAndGoHome = () => {
+    setUnlocked(true);
+    router.replace('/(tabs)');
+  };
 
   useEffect(() => {
     checkPinSet();
     handleBiometricAuth();
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-    return () => {
-      subscription.remove();
-    };
+    // Auto-lock-on-background lives in useAutoLock at the root layout so it
+    // continues working when the user is on any tab, not just this screen.
   }, []);
 
   const checkPinSet = async () => {
@@ -36,7 +38,7 @@ export default function PinLockScreen() {
       if (isEnrolled) {
         const result = await LocalAuthentication.authenticateAsync();
         if (result.success) {
-          router.replace('/(tabs)');
+          unlockAndGoHome();
         }
       }
     }
@@ -52,7 +54,7 @@ export default function PinLockScreen() {
           verifyPin(newPin);
         } else {
           await SecureStore.setItemAsync(PIN_KEY, newPin);
-          router.replace('/(tabs)');
+          unlockAndGoHome();
         }
         setPin('');
       }
@@ -62,21 +64,10 @@ export default function PinLockScreen() {
   const verifyPin = async (enteredPin: string) => {
     const storedPin = await SecureStore.getItemAsync(PIN_KEY);
     if (enteredPin === storedPin) {
-      router.replace('/(tabs)');
+      unlockAndGoHome();
     } else {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setPin('');
-    }
-  };
-
-  const handleAppStateChange = async (nextAppState: any) => {
-    if (nextAppState === 'background') {
-      await SecureStore.setItemAsync(LAST_ACTIVE_TIMESTAMP_KEY, Date.now().toString());
-    } else if (nextAppState === 'active') {
-      const lastActive = await SecureStore.getItemAsync(LAST_ACTIVE_TIMESTAMP_KEY);
-      if (lastActive && Date.now() - parseInt(lastActive) > 2 * 60 * 1000) {
-        router.replace('/(auth)/pin-lock');
-      }
     }
   };
 

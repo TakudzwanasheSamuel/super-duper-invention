@@ -24,26 +24,39 @@ myBudget is a comprehensive personal finance application designed to help you ma
 
 *   **Framework:** [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
 *   **State Management:** [Zustand](https://github.com/pmndrs/zustand)
-*   **Database:** [SQLite](https://www.sqlite.org/index.html) with [Drizzle ORM](https://orm.drizzle.team/) for local data persistence.
-*   **Navigation:** [Expo Router](https://docs.expo.dev/router/introduction/) (File-based routing)
-*   **Charting:** [Victory Native](https://formidable.com/open-source/victory/docs/native) for data visualization.
-*   **Styling:** StyleSheet with theme support for dynamic light/dark modes.
+*   **Database:** [SQLite](https://www.sqlite.org/index.html) via `expo-sqlite` for local data persistence.
+*   **Navigation:** [Expo Router](https://docs.expo.dev/router/introduction/) (file-based routing).
+*   **Styling:** StyleSheet with a custom Dark Luxury Utility theme.
 
 ## 🚀 Getting Started
-
-This project is optimized for development within an IDE like IDX.
 
 1.  **Clone the repository.**
 2.  **Install dependencies:**
     ```bash
     npm install
     ```
-3.  **Run the application:**
-    *   **Android:** The development environment should automatically start the Android preview. You can also run the following command and select the desired emulator or device.
-        ```bash
-        npm run android
-        ```
-    *   **Web:** The web preview is managed automatically by the IDE.
+3.  **Run the application (Expo Go for everyday work):**
+    ```bash
+    npx expo start -c
+    ```
+    Then press `a` for Android or scan the QR with Expo Go.
+
+### Features that require a development build (not Expo Go)
+
+Some integrations are unsupported in Expo Go and only work in a dev build / EAS
+build:
+
+*   **Subscription reminders** — `expo-notifications` is gated behind a runtime
+    check; in Expo Go scheduling is silently skipped.
+*   **Home-screen widgets** — `react-native-android-widget` requires a native
+    build.
+
+Create a dev build with:
+
+```bash
+npx expo prebuild
+npx expo run:android
+```
 
 ## 📂 Project Structure
 

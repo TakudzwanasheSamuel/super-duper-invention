@@ -8,15 +8,28 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Fonts } from '@/constants/theme';
 import { useCategoryStore } from '@/store/useCategoryStore';
 import { CategoryRow } from '@/api/db';
+import {
+  CategoryIconOptions,
+  DEFAULT_CATEGORY_ICON,
+  getDefaultIconForCategory,
+} from '@/constants/categories';
+
+type EditDraft = {
+  name: string;
+  type: 'income' | 'expense';
+  icon_name: string;
+};
 
 export default function CategoryManager() {
   const { categories, addCategory, updateCategory, deleteCategory } = useCategoryStore();
   const [newName, setNewName] = useState('');
   const [newType, setNewType] = useState<'income' | 'expense'>('expense');
-  const [editing, setEditing] = useState<Record<number, { name: string; type: 'income' | 'expense' }>>({});
+  const [newIcon, setNewIcon] = useState<string>(DEFAULT_CATEGORY_ICON);
+  const [editing, setEditing] = useState<Record<number, EditDraft>>({});
 
   const handleAdd = () => {
     const trimmed = newName.trim();
@@ -24,14 +37,23 @@ export default function CategoryManager() {
       Alert.alert('Name required', 'Please enter a category name.');
       return;
     }
-    addCategory(trimmed, newType);
+    const icon =
+      newIcon && newIcon !== DEFAULT_CATEGORY_ICON
+        ? newIcon
+        : getDefaultIconForCategory(trimmed);
+    addCategory(trimmed, newType, icon);
     setNewName('');
+    setNewIcon(DEFAULT_CATEGORY_ICON);
   };
 
   const startEditing = (cat: CategoryRow) => {
     setEditing(prev => ({
       ...prev,
-      [cat.id]: { name: cat.name, type: cat.type },
+      [cat.id]: {
+        name: cat.name,
+        type: cat.type,
+        icon_name: cat.icon_name || getDefaultIconForCategory(cat.name),
+      },
     }));
   };
 
@@ -43,7 +65,12 @@ export default function CategoryManager() {
       Alert.alert('Name required', 'Please enter a category name.');
       return;
     }
-    updateCategory({ ...cat, name: trimmed, type: draft.type });
+    updateCategory({
+      ...cat,
+      name: trimmed,
+      type: draft.type,
+      icon_name: draft.icon_name || getDefaultIconForCategory(trimmed),
+    });
     setEditing(prev => {
       const copy = { ...prev };
       delete copy[cat.id];
@@ -66,71 +93,134 @@ export default function CategoryManager() {
     );
   };
 
+  const renderIconPicker = (
+    selected: string,
+    onSelect: (icon: string) => void,
+  ) => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.iconRow}
+    >
+      {CategoryIconOptions.map(opt => {
+        const active = selected === opt.name;
+        return (
+          <TouchableOpacity
+            key={opt.name}
+            style={[styles.iconPill, active && styles.iconPillActive]}
+            onPress={() => onSelect(opt.name)}
+          >
+            <MaterialIcons
+              name={opt.name as any}
+              size={20}
+              color={active ? '#0B1120' : Colors.accent.gold}
+            />
+            <Text
+              style={[
+                styles.iconPillText,
+                active && styles.iconPillTextActive,
+              ]}
+            >
+              {opt.label}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  );
+
   const renderRow = (cat: CategoryRow) => {
     const draft = editing[cat.id];
     const name = draft ? draft.name : cat.name;
     const type = draft ? draft.type : cat.type;
+    const iconName =
+      draft?.icon_name || cat.icon_name || getDefaultIconForCategory(cat.name);
 
     return (
       <View key={cat.id} style={styles.row}>
-        <View style={styles.rowMain}>
+        <View style={styles.rowHeader}>
+          <View style={styles.categoryIconBadge}>
+            <MaterialIcons
+              name={(iconName as any) || DEFAULT_CATEGORY_ICON}
+              size={20}
+              color={Colors.accent.gold}
+            />
+          </View>
           <TextInput
             style={styles.nameInput}
             value={name}
-            onChangeText={(text) =>
-              setEditing(prev => ({
-                ...prev,
-                [cat.id]: { name: text, type },
-              }))
-            }
+            onChangeText={(text) => {
+              if (draft) {
+                setEditing(prev => ({
+                  ...prev,
+                  [cat.id]: { ...draft, name: text },
+                }));
+              } else {
+                startEditing({ ...cat, name: text });
+              }
+            }}
             placeholder="Category name"
             placeholderTextColor="#6B7280"
           />
-          <View style={styles.typePills}>
-            <TouchableOpacity
-              style={[
-                styles.typePill,
-                type === 'expense' && styles.typePillActive,
-              ]}
-              onPress={() =>
-                setEditing(prev => ({
-                  ...prev,
-                  [cat.id]: { name, type: 'expense' },
-                }))
-              }
-            >
-              <Text
-                style={[
-                  styles.typePillText,
-                  type === 'expense' && styles.typePillTextActive,
-                ]}
-              >
-                Expense
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.typePill,
-                type === 'income' && styles.typePillActive,
-              ]}
-              onPress={() =>
-                setEditing(prev => ({
-                  ...prev,
-                  [cat.id]: { name, type: 'income' },
-                }))
-              }
-            >
-              <Text
-                style={[
-                  styles.typePillText,
-                  type === 'income' && styles.typePillTextActive,
-                ]}
-              >
-                Income
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
+
+        <View style={styles.typePills}>
+          <TouchableOpacity
+            style={[styles.typePill, type === 'expense' && styles.typePillActive]}
+            onPress={() => {
+              const base: EditDraft = draft ?? {
+                name,
+                type,
+                icon_name: iconName,
+              };
+              setEditing(prev => ({
+                ...prev,
+                [cat.id]: { ...base, type: 'expense' },
+              }));
+            }}
+          >
+            <Text
+              style={[
+                styles.typePillText,
+                type === 'expense' && styles.typePillTextActive,
+              ]}
+            >
+              Expense
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.typePill, type === 'income' && styles.typePillActive]}
+            onPress={() => {
+              const base: EditDraft = draft ?? {
+                name,
+                type,
+                icon_name: iconName,
+              };
+              setEditing(prev => ({
+                ...prev,
+                [cat.id]: { ...base, type: 'income' },
+              }));
+            }}
+          >
+            <Text
+              style={[
+                styles.typePillText,
+                type === 'income' && styles.typePillTextActive,
+              ]}
+            >
+              Income
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {renderIconPicker(iconName, icon => {
+          const base: EditDraft = draft ?? { name, type, icon_name: iconName };
+          setEditing(prev => ({
+            ...prev,
+            [cat.id]: { ...base, icon_name: icon },
+          }));
+        })}
+
         <View style={styles.rowActions}>
           <TouchableOpacity
             style={styles.smallButton}
@@ -153,7 +243,7 @@ export default function CategoryManager() {
     <View>
       <Text style={styles.sectionTitle}>Categories</Text>
       <Text style={styles.helperText}>
-        Create, rename, and change the type of your categories.
+        Create, rename, choose an icon, and change the type of your categories.
       </Text>
 
       <View style={styles.addRow}>
@@ -166,10 +256,7 @@ export default function CategoryManager() {
         />
         <View style={styles.typePills}>
           <TouchableOpacity
-            style={[
-              styles.typePill,
-              newType === 'expense' && styles.typePillActive,
-            ]}
+            style={[styles.typePill, newType === 'expense' && styles.typePillActive]}
             onPress={() => setNewType('expense')}
           >
             <Text
@@ -182,10 +269,7 @@ export default function CategoryManager() {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[
-              styles.typePill,
-              newType === 'income' && styles.typePillActive,
-            ]}
+            style={[styles.typePill, newType === 'income' && styles.typePillActive]}
             onPress={() => setNewType('income')}
           >
             <Text
@@ -198,6 +282,7 @@ export default function CategoryManager() {
             </Text>
           </TouchableOpacity>
         </View>
+        {renderIconPicker(newIcon, setNewIcon)}
       </View>
       <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
         <Text style={styles.addButtonText}>Add Category</Text>
@@ -264,6 +349,33 @@ const styles = StyleSheet.create({
   typePillTextActive: {
     color: '#0B1120',
   },
+  iconRow: {
+    gap: 8,
+    paddingVertical: 8,
+  },
+  iconPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: Colors.accent.gold,
+    backgroundColor: '#0A0A0A',
+  },
+  iconPillActive: {
+    backgroundColor: Colors.accent.gold,
+  },
+  iconPillText: {
+    fontFamily: Fonts.body,
+    fontSize: 12,
+    color: '#E5E7EB',
+  },
+  iconPillTextActive: {
+    color: '#0B1120',
+    fontFamily: Fonts.heading,
+  },
   addButton: {
     marginTop: 8,
     marginBottom: 8,
@@ -278,18 +390,30 @@ const styles = StyleSheet.create({
     color: '#0B1120',
   },
   list: {
-    maxHeight: 260,
+    maxHeight: 320,
     marginTop: 4,
   },
   row: {
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#1F2937',
   },
-  rowMain: {
+  rowHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     marginBottom: 6,
   },
+  categoryIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#0F172A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   nameInput: {
+    flex: 1,
     backgroundColor: '#020617',
     color: '#F9FAFB',
     paddingHorizontal: 10,
@@ -304,6 +428,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 8,
+    marginTop: 6,
   },
   smallButton: {
     paddingHorizontal: 10,
@@ -322,4 +447,3 @@ const styles = StyleSheet.create({
     color: '#E5E7EB',
   },
 });
-

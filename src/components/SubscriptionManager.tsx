@@ -3,21 +3,24 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Alert } 
 import { useSubscriptionStore } from '@/store/useSubscriptionStore';
 import { useCategoryStore } from '@/store/useCategoryStore';
 import { useRateStore } from '@/store/useRateStore';
+import { useUserStore } from '@/store/useUserStore';
 import { Colors, Fonts } from '@/constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { formatCurrency } from '@/utils/finance';
+
+type Currency = 'USD' | 'ZiG';
 
 export default function SubscriptionManager() {
-  const { subscriptions, fetchSubscriptions, addSubscription, getMonthlyDigitalBurn } = useSubscriptionStore();
+  const { subscriptions, addSubscription, getMonthlyDigitalBurn } = useSubscriptionStore();
   const { categories } = useCategoryStore();
   const { lastRate } = useRateStore();
+  const { primaryCurrency } = useUserStore();
+
   const [serviceName, setServiceName] = useState('');
   const [amount, setAmount] = useState('');
   const [billingDay, setBillingDay] = useState('');
-
-  React.useEffect(() => {
-    fetchSubscriptions();
-  }, []);
+  const [currency, setCurrency] = useState<Currency>(primaryCurrency);
 
   const handleAddSubscription = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -36,16 +39,11 @@ export default function SubscriptionManager() {
       return;
     }
 
-    if (
-      isNaN(billingDayValue) ||
-      billingDayValue < 1 ||
-      billingDayValue > 31
-    ) {
+    if (isNaN(billingDayValue) || billingDayValue < 1 || billingDayValue > 31) {
       Alert.alert('Billing day invalid', 'Please enter a day between 1 and 31.');
       return;
     }
 
-    // Prefer a dedicated "Subscriptions" expense category; otherwise fall back
     const subscriptionsCategory =
       categories.find(c => c.name === 'Subscriptions' && c.type === 'expense') ??
       categories.find(c => c.type === 'expense') ??
@@ -62,7 +60,7 @@ export default function SubscriptionManager() {
     addSubscription({
       service_name: trimmedName,
       amount: Math.round(amountValue * 100),
-      currency: 'USD',
+      currency,
       billing_day: billingDayValue,
       category_id: subscriptionsCategory.id,
     });
@@ -70,18 +68,26 @@ export default function SubscriptionManager() {
     setServiceName('');
     setAmount('');
     setBillingDay('');
+    setCurrency(primaryCurrency);
   };
 
-  const renderItem = ({ item }) => {
-    const projectedZigCost = (item.amount / 100) * lastRate;
+  const renderItem = ({ item }: { item: typeof subscriptions[number] }) => {
+    const amountText = formatCurrency(item.amount / 100, item.currency);
+    const projectedCurrency: Currency = item.currency === 'USD' ? 'ZiG' : 'USD';
+    const projected =
+      item.currency === 'USD'
+        ? (item.amount / 100) * (lastRate || 1)
+        : (item.amount / 100) / (lastRate || 1);
 
     return (
       <View style={styles.card}>
-        <MaterialCommunityIcons name="netflix" size={40} color="#E50914" />
+        <MaterialCommunityIcons name="play-circle" size={40} color={Colors.accent.gold} />
         <View style={styles.cardDetails}>
           <Text style={styles.cardServiceName}>{item.service_name}</Text>
-          <Text style={styles.cardAmount}>${(item.amount / 100).toFixed(2)}</Text>
-          <Text style={styles.projectedCost}>Projected ZiG: ZWL {projectedZigCost.toFixed(2)}</Text>
+          <Text style={styles.cardAmount}>{amountText}</Text>
+          <Text style={styles.projectedCost}>
+            Projected: {formatCurrency(projected, projectedCurrency)}
+          </Text>
         </View>
         <Text style={styles.cardBillingDay}>Day: {item.billing_day}</Text>
       </View>
@@ -92,7 +98,9 @@ export default function SubscriptionManager() {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Text style={styles.header}>Monthly Digital Burn</Text>
-        <Text style={styles.burnAmount}>${getMonthlyDigitalBurn().toFixed(2)}</Text>
+        <Text style={styles.burnAmount}>
+          {formatCurrency(getMonthlyDigitalBurn(), primaryCurrency)}
+        </Text>
       </View>
       <FlatList
         data={subscriptions}
@@ -117,6 +125,22 @@ export default function SubscriptionManager() {
           value={amount}
           onChangeText={setAmount}
         />
+        <View style={styles.currencyRow}>
+          {(['USD', 'ZiG'] as Currency[]).map(c => {
+            const active = currency === c;
+            return (
+              <TouchableOpacity
+                key={c}
+                style={[styles.currencyPill, active && styles.currencyPillActive]}
+                onPress={() => setCurrency(c)}
+              >
+                <Text style={[styles.currencyPillText, active && styles.currencyPillTextActive]}>
+                  {c}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
         <TextInput
           style={styles.input}
           placeholder="Billing Day (1-31)"
@@ -190,21 +214,48 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   input: {
-    backgroundColor: '#333',
-    color: 'white',
+    backgroundColor: '#0A0A0A',
+    color: '#F9FAFB',
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: Colors.accent.blue,
     fontFamily: Fonts.body,
   },
-  addButton: {
+  currencyRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 10,
+  },
+  currencyPill: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: Colors.accent.blue,
+    alignItems: 'center',
+  },
+  currencyPillActive: {
     backgroundColor: Colors.accent.blue,
+  },
+  currencyPillText: {
+    fontFamily: Fonts.body,
+    color: '#E5E7EB',
+    fontSize: 14,
+  },
+  currencyPillTextActive: {
+    color: '#0B1120',
+    fontFamily: Fonts.heading,
+  },
+  addButton: {
+    backgroundColor: Colors.accent.gold,
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
   },
   addButtonText: {
-    color: 'white',
+    color: '#0B1120',
     fontFamily: Fonts.heading,
     fontSize: 18,
   },

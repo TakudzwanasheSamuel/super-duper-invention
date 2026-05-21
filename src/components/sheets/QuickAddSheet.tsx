@@ -37,17 +37,16 @@ export default function QuickAddSheet() {
         ? (parseFloat(rate) > 0 ? parseFloat(rate) : currentExchangeRate)
         : currentExchangeRate;
 
-    const transaction = {
+    addTransaction({
       amount: amountInCents,
       currency,
       type,
       rate: effectiveRate,
-      category_id: categoryId as number | null,
-      note: '', // You can add a note field if you want
-      payment_method: 'cash', // Default or from another input
+      category_id: categoryId,
+      note: '',
+      payment_method: 'cash',
       timestamp: Date.now(),
-    };
-    addTransaction(transaction);
+    });
     // Clear inputs after logging
     setAmount('');
     setRate('');

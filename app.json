@@ -6,20 +6,36 @@
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "mybudget",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "primaryColor": "#0B1120",
+    "backgroundColor": "#0B1120",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mybudget.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "myBudget uses Face ID so only you can unlock your finances."
+      }
     },
     "android": {
+      "package": "com.mybudget.app",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0B1120",
         "foregroundImage": "./assets/images/logo.png",
-        "backgroundImage": "./assets/images/logo.png",
         "monochromeImage": "./assets/images/logo.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
+        "VIBRATE",
+        "POST_NOTIFICATIONS",
+        "RECEIVE_BOOT_COMPLETED",
+        "SCHEDULE_EXACT_ALARM"
+      ],
       "intentFilters": [
         {
           "action": "VIEW",
@@ -28,6 +44,14 @@
             {
               "scheme": "mybudget",
               "host": "budget"
+            },
+            {
+              "scheme": "mybudget",
+              "host": "insights"
+            },
+            {
+              "scheme": "mybudget",
+              "host": "settings"
             }
           ],
           "category": [
@@ -41,6 +65,11 @@
       "output": "static",
       "favicon": "./assets/images/logo.png"
     },
+    "notification": {
+      "icon": "./assets/images/logo.png",
+      "color": "#0B1120",
+      "androidMode": "default"
+    },
     "plugins": [
       "expo-router",
       [
@@ -49,10 +78,18 @@
           "image": "./assets/images/logo.png",
           "imageWidth": 220,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#0B1120",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#0B1120"
           }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logo.png",
+          "color": "#0B1120",
+          "defaultChannel": "default"
         }
       ],
       [
@@ -76,7 +113,10 @@
           ]
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-secure-store",
+      "expo-local-authentication",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

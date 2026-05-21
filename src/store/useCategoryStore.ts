@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { openLegacyDatabase } from '@/api/sqliteCompat';
 import { CategoryRow } from '@/api/db';
+import { getDefaultIconForCategory } from '@/constants/categories';
 
 const db = openLegacyDatabase('dark-luxury.db');
 
@@ -10,7 +11,7 @@ type State = {
 
 type Actions = {
   fetchCategories: () => void;
-  addCategory: (name: string, type: CategoryRow['type']) => void;
+  addCategory: (name: string, type: CategoryRow['type'], iconName?: string) => void;
   updateCategory: (category: CategoryRow) => void;
   deleteCategory: (id: number) => void;
 };
@@ -34,14 +35,16 @@ export const useCategoryStore = create<State & Actions>((set, get) => ({
     });
   },
 
-  addCategory: (name, type) => {
+  addCategory: (name, type, iconName) => {
     const trimmed = name.trim();
     if (!trimmed) return;
+
+    const icon = iconName || getDefaultIconForCategory(trimmed);
 
     db.transaction(tx => {
       tx.executeSql(
         'INSERT INTO categories (name, icon_name, type) VALUES (?, ?, ?)',
-        [trimmed, '', type],
+        [trimmed, icon, type],
         () => {
           get().fetchCategories();
         },

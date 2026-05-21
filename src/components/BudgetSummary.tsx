@@ -1,25 +1,68 @@
-
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTransactionStore } from '@/store/useTransactionStore';
 import { useUserStore } from '@/store/useUserStore';
+import { useRateStore } from '@/store/useRateStore';
+import { useCategoryStore } from '@/store/useCategoryStore';
 import { Colors, Fonts } from '@/constants/theme';
+import {
+  convertAmountCents,
+  formatCurrency,
+  isNonSpendCategoryName,
+  startOfCurrentMonth,
+} from '@/utils/finance';
 
 export default function BudgetSummary() {
-  const { getConvertedBalance, getCardSpend, getCashSpend } = useTransactionStore();
-  const { primaryCurrency } = useUserStore();
+  const transactions = useTransactionStore(s => s.transactions);
+  const getConvertedBalance = useTransactionStore(s => s.getConvertedBalance);
+  const primaryCurrency = useUserStore(s => s.primaryCurrency);
+  const lastRate = useRateStore(s => s.lastRate);
+  const categories = useCategoryStore(s => s.categories);
 
   const remainingBalance = getConvertedBalance();
-  const cardSpend = getCardSpend();
-  const cashSpend = getCashSpend();
 
-  const totalCardLabel = 'Monthly Card Spend';
-  const totalCashLabel = 'Monthly Cash Spend';
+  // Use the real persisted rate. Fall back to 1.0 only if no rate has ever been
+  // recorded — that way the two currency columns at least don't divide-by-zero.
+  const rate = lastRate && lastRate > 0 ? lastRate : 1;
 
   const usdBalance =
-    primaryCurrency === 'USD' ? remainingBalance : remainingBalance /  getUsdRateFallback();
+    primaryCurrency === 'USD' ? remainingBalance : remainingBalance / rate;
   const zigBalance =
-    primaryCurrency === 'ZiG' ? remainingBalance : remainingBalance * getUsdRateFallback();
+    primaryCurrency === 'ZiG' ? remainingBalance : remainingBalance * rate;
+
+  const { monthCardSpend, monthCashSpend, monthSaved } = useMemo(() => {
+    const monthStart = startOfCurrentMonth();
+    const categoryById = new Map<number, string>();
+    categories.forEach(c => categoryById.set(c.id, c.name));
+
+    let cardCents = 0;
+    let cashCents = 0;
+    let savedCents = 0;
+
+    for (const t of transactions) {
+      if (t.timestamp < monthStart) continue;
+      if (t.type !== 'expense') continue;
+
+      const name = t.category_id != null ? categoryById.get(t.category_id) : undefined;
+      const converted = convertAmountCents(t.amount, t.currency, primaryCurrency, rate);
+
+      if (isNonSpendCategoryName(name)) {
+        savedCents += converted;
+      } else if (t.payment_method === 'card') {
+        cardCents += converted;
+      } else if (t.payment_method === 'cash') {
+        cashCents += converted;
+      }
+    }
+
+    return {
+      monthCardSpend: cardCents / 100,
+      monthCashSpend: cashCents / 100,
+      monthSaved: savedCents / 100,
+    };
+  }, [transactions, categories, primaryCurrency, rate]);
+
+  const monthTotalSpend = monthCardSpend + monthCashSpend;
 
   return (
     <View style={styles.container}>
@@ -34,43 +77,65 @@ export default function BudgetSummary() {
             <View style={styles.balanceColumn}>
               <Text style={styles.balanceLabel}>USD</Text>
               <Text style={[styles.balanceValue, styles.usdValue]}>
-                ${usdBalance.toFixed(2)}
+                {formatCurrency(usdBalance, 'USD')}
               </Text>
             </View>
             <View style={styles.balanceColumn}>
               <Text style={styles.balanceLabel}>ZiG</Text>
               <Text style={[styles.balanceValue, styles.zigValue]}>
-                ${zigBalance.toFixed(2)}
+                {formatCurrency(zigBalance, 'ZiG')}
               </Text>
             </View>
           </View>
+          <Text style={styles.cardFootnote}>
+            Rate: 1 USD = {rate.toFixed(2)} ZiG
+          </Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Spending Split</Text>
+          <Text style={styles.cardTitle}>Spending Split (This Month)</Text>
           <View style={styles.splitRow}>
             <View style={styles.splitColumn}>
-              <Text style={styles.balanceLabel}>{totalCardLabel}</Text>
+              <Text style={styles.balanceLabel}>Card</Text>
               <Text style={[styles.balanceValue, styles.usdValue]}>
-                ${cardSpend.toFixed(2)}
+                {formatCurrency(monthCardSpend, primaryCurrency)}
               </Text>
             </View>
             <View style={styles.splitColumn}>
-              <Text style={styles.balanceLabel}>{totalCashLabel}</Text>
+              <Text style={styles.balanceLabel}>Cash</Text>
               <Text style={[styles.balanceValue, styles.zigValue]}>
-                ${cashSpend.toFixed(2)}
+                {formatCurrency(monthCashSpend, primaryCurrency)}
               </Text>
             </View>
           </View>
+          <Text style={styles.cardFootnote}>
+            Total spent: {formatCurrency(monthTotalSpend, primaryCurrency)}
+          </Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Activity (This Month)</Text>
+          <View style={styles.splitRow}>
+            <View style={styles.splitColumn}>
+              <Text style={styles.balanceLabel}>Spent</Text>
+              <Text style={[styles.balanceValue, styles.spentValue]}>
+                {formatCurrency(monthTotalSpend, primaryCurrency)}
+              </Text>
+            </View>
+            <View style={styles.splitColumn}>
+              <Text style={styles.balanceLabel}>Saved</Text>
+              <Text style={[styles.balanceValue, styles.savedValue]}>
+                {formatCurrency(monthSaved, primaryCurrency)}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.cardFootnote}>
+            Savings excluded from spending charts
+          </Text>
         </View>
       </ScrollView>
     </View>
   );
-}
-
-// Fallback rate if no FX logic is available in this context
-function getUsdRateFallback() {
-  return 1;
 }
 
 const styles = StyleSheet.create({
@@ -124,5 +189,17 @@ const styles = StyleSheet.create({
   },
   zigValue: {
     color: Colors.accent.gold,
+  },
+  spentValue: {
+    color: '#F87171',
+  },
+  savedValue: {
+    color: '#34D399',
+  },
+  cardFootnote: {
+    fontFamily: Fonts.body,
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 10,
   },
 });

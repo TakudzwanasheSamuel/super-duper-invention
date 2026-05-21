@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useGroceryStore } from '@/store/useGroceryStore';
+import { useUserStore } from '@/store/useUserStore';
 import { CheckBox } from 'react-native-elements';
+import { MaterialIcons } from '@expo/vector-icons';
 import { Colors, Fonts } from '@/constants/theme';
 import { GroceryItemRow } from '@/api/db';
 
 export default function GroceryList() {
-  const { groceryItems, fetchGroceryItems, addGroceryItem, updateGroceryItem, resetList, finalizeShopping } = useGroceryStore();
-  const [editingItem, setEditingItem] = useState<GroceryItemRow | null>(null);
+  const {
+    groceryItems,
+    addGroceryItem,
+    updateGroceryItem,
+    deleteGroceryItem,
+    resetList,
+    finalizeShopping,
+  } = useGroceryStore();
+  const { primaryCurrency } = useUserStore();
+
   const [newName, setNewName] = useState('');
   const [newPrice, setNewPrice] = useState('');
   const [addName, setAddName] = useState('');
   const [addPrice, setAddPrice] = useState('');
-
-  React.useEffect(() => {
-    fetchGroceryItems();
-  }, []);
 
   const handlePriceUpdate = (item: GroceryItemRow) => {
     Alert.alert(
@@ -23,12 +29,29 @@ export default function GroceryList() {
       'Update template with this new price?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'OK', onPress: () => {
-          const updatedItem = { ...item, default_price: Math.round(parseFloat(newPrice) * 100) };
-          updateGroceryItem(updatedItem);
-          setEditingItem(null);
-        } },
-      ]
+        {
+          text: 'OK',
+          onPress: () => {
+            const updatedItem = { ...item, default_price: Math.round(parseFloat(newPrice) * 100) };
+            updateGroceryItem(updatedItem);
+          },
+        },
+      ],
+    );
+  };
+
+  const handleDelete = (item: GroceryItemRow) => {
+    Alert.alert(
+      'Delete item',
+      `Remove "${item.name}" from your list?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteGroceryItem(item.id),
+        },
+      ],
     );
   };
 
@@ -44,14 +67,22 @@ export default function GroceryList() {
           defaultValue={item.name}
           onBlur={() => updateGroceryItem({ ...item, name: newName || item.name })}
           onChangeText={setNewName}
+          placeholderTextColor={Colors.accent.blue}
         />
-        <TextInput
-          style={styles.itemPrice}
-          defaultValue={(item.default_price / 100).toFixed(2)}
-          keyboardType="numeric"
-          onBlur={() => handlePriceUpdate(item)}
-          onChangeText={setNewPrice}
-        />
+        <View style={styles.itemRight}>
+          <TextInput
+            style={styles.itemPrice}
+            defaultValue={(item.default_price / 100).toFixed(2)}
+            keyboardType="numeric"
+            onBlur={() => handlePriceUpdate(item)}
+            onChangeText={setNewPrice}
+            placeholderTextColor={Colors.accent.blue}
+          />
+          <Text style={styles.itemCurrency}>{item.currency}</Text>
+          <TouchableOpacity onPress={() => handleDelete(item)} style={styles.deleteButton}>
+            <MaterialIcons name="delete-outline" size={22} color="#DC2626" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -63,7 +94,11 @@ export default function GroceryList() {
       return;
     }
     const price = parseFloat(addPrice) || 0;
-    addGroceryItem({ name: trimmed, default_price: Math.round(price * 100), currency: 'USD' });
+    addGroceryItem({
+      name: trimmed,
+      default_price: Math.round(price * 100),
+      currency: primaryCurrency,
+    });
     setAddName('');
     setAddPrice('');
   };
@@ -139,11 +174,27 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: Fonts.body,
     fontSize: 16,
+    flex: 1,
+  },
+  itemRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   itemPrice: {
     color: 'white',
     fontFamily: Fonts.body,
     fontSize: 16,
+    minWidth: 60,
+    textAlign: 'right',
+  },
+  itemCurrency: {
+    color: '#9CA3AF',
+    fontFamily: Fonts.body,
+    fontSize: 12,
+  },
+  deleteButton: {
+    padding: 4,
   },
   addRow: {
     flexDirection: 'row',

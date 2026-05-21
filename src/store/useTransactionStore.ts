@@ -33,7 +33,7 @@ export const useTransactionStore = create<State & Actions>((set, get) => ({
   fetchTransactions: () => {
     const { paymentMethodFilter } = get();
     let query = 'SELECT * FROM transactions';
-    const params = [];
+    const params: (string | number)[] = [];
 
     if (paymentMethodFilter !== 'all') {
       query += ' WHERE payment_method = ?';

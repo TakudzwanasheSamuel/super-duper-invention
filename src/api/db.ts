@@ -1,5 +1,6 @@
 import { openLegacyDatabase } from '@/api/sqliteCompat';
-import React, { ReactNode, useEffect } from 'react';
+import { ReactNode } from 'react';
+import { getDefaultIconForCategory } from '@/constants/categories';
 
 // --- TypeScript Interfaces ---
 export interface TransactionRow {
@@ -8,7 +9,12 @@ export interface TransactionRow {
   amount: number; // Stored in cents
   currency: 'USD' | 'ZiG';
   rate: number;
-  category_id: number;
+  /**
+   * Nullable so Quick Add / widget-driven entries can record an
+   * "Uncategorized" transaction when the user hasn't created or selected a
+   * category yet. Consumers must treat null as "Uncategorized".
+   */
+  category_id: number | null;
   note: string;
   payment_method: 'card' | 'cash';
   timestamp: number;
@@ -41,7 +47,7 @@ export interface SubscriptionRow {
   amount: number; // Stored in cents
   currency: 'USD' | 'ZiG';
   billing_day: number;
-  category_id: number;
+  category_id: number | null;
 }
 
 export interface SavingsGoalRow {
@@ -61,17 +67,20 @@ const seedCategories = () => {
             [],
             (_, { rows }) => {
                 if (rows._array[0].count === 0) {
-                    const defaultCategories = [
-                        { name: 'Groceries', icon_name: 'food', type: 'expense' },
-                        { name: 'Tech', icon_name: 'laptop', type: 'expense' },
-                        { name: 'Subscriptions', icon_name: 'credit-card', type: 'expense' },
-                        { name: 'Transport', icon_name: 'car', type: 'expense' },
-                        { name: 'Income', icon_name: 'dollar-sign', type: 'income' },
-                        { name: 'Savings', icon_name: 'save', type: 'expense' },
+                    const defaultCategories: { name: string; type: 'income' | 'expense' }[] = [
+                        { name: 'Groceries', type: 'expense' },
+                        { name: 'Tech', type: 'expense' },
+                        { name: 'Subscriptions', type: 'expense' },
+                        { name: 'Transport', type: 'expense' },
+                        { name: 'Income', type: 'income' },
+                        { name: 'Savings', type: 'expense' },
                     ];
 
                     defaultCategories.forEach(cat => {
-                        tx.executeSql('INSERT INTO categories (name, icon_name, type) VALUES (?, ?, ?)', [cat.name, cat.icon_name, cat.type]);
+                        tx.executeSql(
+                          'INSERT INTO categories (name, icon_name, type) VALUES (?, ?, ?)',
+                          [cat.name, getDefaultIconForCategory(cat.name), cat.type],
+                        );
                     });
                 }
             }
@@ -79,10 +88,20 @@ const seedCategories = () => {
     });
 };
 
-// --- Initialization Function ---
-export const initDB = () => {
-  db.transaction(tx => {
-    // Create Tables
+// --- Migrations ---
+/**
+ * SQLite-level migration system using PRAGMA user_version.
+ *
+ * Each entry runs ONCE when the on-disk DB version is below its index + 1.
+ * Append new migrations to the end of the array — NEVER edit or reorder
+ * existing ones, or installed users will skip steps.
+ *
+ * Index 0 (target version 1) is the initial schema. Subsequent indexes are
+ * incremental ALTER / CREATE statements.
+ */
+const MIGRATIONS: ReadonlyArray<(tx: any) => void> = [
+  // v1 — initial schema
+  (tx) => {
     tx.executeSql(
       'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY NOT NULL, userName TEXT NOT NULL, primaryCurrency TEXT NOT NULL);'
     );
@@ -146,11 +165,56 @@ export const initDB = () => {
       );`
     );
   },
-  (error) => {
-    console.error("Database initialization error:", error);
+
+  // v2 — performance: index transactions by timestamp (insights queries / list ORDER BY)
+  (tx) => {
+    tx.executeSql(
+      'CREATE INDEX IF NOT EXISTS idx_transactions_timestamp ON transactions(timestamp);'
+    );
+    tx.executeSql(
+      'CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category_id);'
+    );
   },
-  () => {
-    // Success callback
+];
+
+/**
+ * Reads PRAGMA user_version, runs any pending migrations, and bumps the
+ * stored version. Safe to call on every app start.
+ */
+const runMigrations = (onDone?: () => void) => {
+  db.transaction(
+    (tx: any) => {
+      tx.executeSql(
+        'PRAGMA user_version;',
+        [],
+        (_: any, { rows }: any) => {
+          const current: number = rows._array?.[0]?.user_version ?? 0;
+          const target = MIGRATIONS.length;
+
+          if (current >= target) return;
+
+          // Apply each pending migration in order, then stamp the new version.
+          for (let i = current; i < target; i++) {
+            MIGRATIONS[i](tx);
+          }
+          // user_version doesn't accept parametrized binding — interpolate the
+          // integer literal directly. target is hard-coded above, not user input.
+          tx.executeSql(`PRAGMA user_version = ${target};`);
+        }
+      );
+    },
+    (error: unknown) => {
+      if (__DEV__) console.error('Database migration error:', error);
+    },
+    () => {
+      onDone?.();
+    }
+  );
+};
+
+// --- Initialization Function ---
+export const initDB = () => {
+  runMigrations(() => {
     seedCategories();
   });
 };
@@ -162,9 +226,5 @@ interface DatabaseProviderProps {
 }
 
 export const DatabaseProvider = ({ children }: DatabaseProviderProps) => {
-    useEffect(() => {
-        initDB();
-    }, []);
-
     return children;
 };

@@ -46,7 +46,7 @@ export const useRateStore = create<State & Actions>((set, get) => ({
         'SELECT rate FROM rates_history ORDER BY timestamp DESC LIMIT 1',
         [],
         (_, { rows }) => {
-          if (rows.length > 0) {
+          if (rows._array.length > 0) {
             set({ lastRate: rows._array[0].rate });
           }
         },
